@@ -123,20 +123,6 @@ func testAdd(t *testing.T) {
 	}
 }
 
-func testPop(t *testing.T) {
-	t.Log("testPop")
-	var sec SecretKey
-	sec.SetByCSPRNG()
-	pop := sec.GetPop()
-	if !pop.VerifyPop(sec.GetPublicKey()) {
-		t.Errorf("Valid Pop does not verify")
-	}
-	sec.SetByCSPRNG()
-	if pop.VerifyPop(sec.GetPublicKey()) {
-		t.Errorf("Invalid Pop verifies")
-	}
-}
-
 func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
@@ -245,7 +231,6 @@ func test(t *testing.T, c int) {
 	testPre(t)
 	testAdd(t)
 	testSign(t)
-	testPop(t)
 	testData(t)
 	testStringConversion(t)
 	testOrder(t, c)

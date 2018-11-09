@@ -113,13 +113,6 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	return mpk
 }
 
-// GetPop --
-func (sec *SecretKey) GetPop() (sign *Sign) {
-	sign = new(Sign)
-	C.blsGetPop(sign.getPointer(), sec.getPointer())
-	return sign
-}
-
 // PublicKey --
 type PublicKey struct {
 	v G2
@@ -243,9 +236,4 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
 	// #nosec
 	return C.blsVerify(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf))) == 1
-}
-
-// VerifyPop --
-func (sign *Sign) VerifyPop(pub *PublicKey) bool {
-	return C.blsVerifyPop(sign.getPointer(), pub.getPointer()) == 1
 }
