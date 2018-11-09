@@ -8,39 +8,6 @@ var unitN = 0
 // Tests (for Benchmarks see below)
 
 func testPre(t *testing.T) {
-	t.Log("init")
-	{
-		var id ID
-		err := id.SetLittleEndian([]byte{6, 5, 4, 3, 2, 1})
-		if err != nil {
-			t.Error(err)
-		}
-		t.Log("id :", id.GetHexString())
-		var id2 ID
-		err = id2.SetHexString(id.GetHexString())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !id.IsEqual(&id2) {
-			t.Errorf("not same id\n%s\n%s", id.GetHexString(), id2.GetHexString())
-		}
-		err = id2.SetDecString(id.GetDecString())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !id.IsEqual(&id2) {
-			t.Errorf("not same id\n%s\n%s", id.GetDecString(), id2.GetDecString())
-		}
-	}
-	{
-		var sec SecretKey
-		err := sec.SetLittleEndian([]byte{1, 2, 3, 4, 5, 6})
-		if err != nil {
-			t.Error(err)
-		}
-		t.Log("sec=", sec.GetHexString())
-	}
-
 	t.Log("create secret key")
 	m := "this is a bls sample for go"
 	var sec SecretKey
@@ -92,66 +59,19 @@ func testStringConversion(t *testing.T) {
 	}
 }
 
-func testRecoverSecretKey(t *testing.T) {
-	t.Log("testRecoverSecretKey")
-	k := 3000
-	var sec SecretKey
-	sec.SetByCSPRNG()
-	t.Logf("sec=%s\n", sec.GetHexString())
-
-	// make master secret key
-	msk := sec.GetMasterSecretKey(k)
-
-	n := k
-	secVec := make([]SecretKey, n)
-	idVec := make([]ID, n)
-	for i := 0; i < n; i++ {
-		err := idVec[i].SetLittleEndian([]byte{byte(i & 255), byte(i >> 8), 2, 3, 4, 5})
-		if err != nil {
-			t.Error(err)
-		}
-		err = secVec[i].Set(msk, &idVec[i])
-		if err != nil {
-			t.Error(err)
-		}
-		//		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
-	}
-	// recover sec2 from secVec and idVec
-	var sec2 SecretKey
-	err := sec2.Recover(secVec, idVec)
-	if err != nil {
-		t.Error(err)
-	}
-	if !sec.IsEqual(&sec2) {
-		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
-	}
-}
-
-func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]ID, []SecretKey, []PublicKey, []Sign) {
-	idTbl := []byte{3, 5, 193, 22, 15}
-	n := len(idTbl)
-
+func testEachSign(t *testing.T, m string) ([]SecretKey, []PublicKey, []Sign) {
+	n := 5
 	secVec := make([]SecretKey, n)
 	pubVec := make([]PublicKey, n)
 	signVec := make([]Sign, n)
-	idVec := make([]ID, n)
 
 	for i := 0; i < n; i++ {
-		err := idVec[i].SetLittleEndian([]byte{idTbl[i], 0, 0, 0, 0, 0})
-		if err != nil {
-			t.Error(err)
-		}
-		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
-
-		err = secVec[i].Set(msk, &idVec[i])
+		err := secVec[i].SetLittleEndian([]byte{0, 0, 0, 0, 0, 0})
 		if err != nil {
 			t.Error(err)
 		}
 
-		err = pubVec[i].Set(mpk, &idVec[i])
-		if err != nil {
-			t.Error(err)
-		}
+		pubVec[i] = *secVec[i].GetPublicKey()
 		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
 
 		if !pubVec[i].IsEqual(secVec[i].GetPublicKey()) {
@@ -163,8 +83,9 @@ func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]I
 			t.Error("Pubkey derivation does not match")
 		}
 	}
-	return idVec, secVec, pubVec, signVec
+	return secVec, pubVec, signVec
 }
+
 func testSign(t *testing.T) {
 	m := "testSign"
 	t.Log(m)
@@ -176,36 +97,7 @@ func testSign(t *testing.T) {
 	if !s0.Verify(pub0, m) {
 		t.Error("Signature does not verify")
 	}
-
-	k := 3
-	msk := sec0.GetMasterSecretKey(k)
-	mpk := GetMasterPublicKey(msk)
-	idVec, secVec, pubVec, signVec := testEachSign(t, m, msk, mpk)
-
-	var sec1 SecretKey
-	err := sec1.Recover(secVec, idVec)
-	if err != nil {
-		t.Error(err)
-	}
-	if !sec0.IsEqual(&sec1) {
-		t.Error("Mismatch in recovered seckey.")
-	}
-	var pub1 PublicKey
-	err = pub1.Recover(pubVec, idVec)
-	if err != nil {
-		t.Error(err)
-	}
-	if !pub0.IsEqual(&pub1) {
-		t.Error("Mismatch in recovered pubkey.")
-	}
-	var s1 Sign
-	err = s1.Recover(signVec, idVec)
-	if err != nil {
-		t.Error(err)
-	}
-	if !s0.IsEqual(&s1) {
-		t.Error("Mismatch in recovered signature.")
-	}
+	testEachSign(t, m)
 }
 
 func testAdd(t *testing.T) {
@@ -343,19 +235,6 @@ func testOrder(t *testing.T, c int) {
 	}
 }
 
-func testDHKeyExchange(t *testing.T) {
-	var sec1, sec2 SecretKey
-	sec1.SetByCSPRNG()
-	sec2.SetByCSPRNG()
-	pub1 := sec1.GetPublicKey()
-	pub2 := sec2.GetPublicKey()
-	out1 := DHKeyExchange(&sec1, pub2)
-	out2 := DHKeyExchange(&sec2, pub1)
-	if !out1.IsEqual(&out2) {
-		t.Errorf("DH key is not equal")
-	}
-}
-
 func test(t *testing.T, c int) {
 	err := initializeBLS(c)
 	if err != nil {
@@ -364,14 +243,12 @@ func test(t *testing.T, c int) {
 	unitN = GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
 	testPre(t)
-	testRecoverSecretKey(t)
 	testAdd(t)
 	testSign(t)
 	testPop(t)
 	testData(t)
 	testStringConversion(t)
 	testOrder(t, c)
-	testDHKeyExchange(t)
 	testSerializeToHexStr(t)
 }
 

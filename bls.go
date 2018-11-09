@@ -27,52 +27,6 @@ func initializeBLS(curve int) error {
 	return nil
 }
 
-// ID --
-type ID struct {
-	v Fr
-}
-
-// getPointer --
-func (id *ID) getPointer() (p *C.blsId) {
-	// #nosec
-	return (*C.blsId)(unsafe.Pointer(id))
-}
-
-// GetLittleEndian --
-func (id *ID) GetLittleEndian() []byte {
-	return id.v.Serialize()
-}
-
-// SetLittleEndian --
-func (id *ID) SetLittleEndian(buf []byte) error {
-	return id.v.SetLittleEndian(buf)
-}
-
-// GetHexString --
-func (id *ID) GetHexString() string {
-	return id.v.GetString(16)
-}
-
-// GetDecString --
-func (id *ID) GetDecString() string {
-	return id.v.GetString(10)
-}
-
-// SetHexString --
-func (id *ID) SetHexString(s string) error {
-	return id.v.SetString(s, 16)
-}
-
-// SetDecString --
-func (id *ID) SetDecString(s string) error {
-	return id.v.SetString(s, 10)
-}
-
-// IsEqual --
-func (id *ID) IsEqual(rhs *ID) bool {
-	return id.v.IsEqual(&rhs.v)
-}
-
 // SecretKey --
 type SecretKey struct {
 	v Fr
@@ -159,18 +113,6 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	return mpk
 }
 
-// Set --
-func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
-	// #nosec
-	return FrEvaluatePolynomial(&sec.v, *(*[]Fr)(unsafe.Pointer(&msk)), &id.v)
-}
-
-// Recover --
-func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
-	// #nosec
-	return FrLagrangeInterpolation(&sec.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]Fr)(unsafe.Pointer(&secVec)))
-}
-
 // GetPop --
 func (sec *SecretKey) GetPop() (sign *Sign) {
 	sign = new(Sign)
@@ -227,18 +169,6 @@ func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	G2Add(&pub.v, &pub.v, &rhs.v)
-}
-
-// Set --
-func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
-	// #nosec
-	return G2EvaluatePolynomial(&pub.v, *(*[]G2)(unsafe.Pointer(&mpk)), &id.v)
-}
-
-// Recover --
-func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
-	// #nosec
-	return G2LagrangeInterpolation(&pub.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G2)(unsafe.Pointer(&pubVec)))
 }
 
 // Sign  --
@@ -308,12 +238,6 @@ func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignatureAdd(sign.getPointer(), rhs.getPointer())
 }
 
-// Recover --
-func (sign *Sign) Recover(signVec []Sign, idVec []ID) error {
-	// #nosec
-	return G1LagrangeInterpolation(&sign.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G1)(unsafe.Pointer(&signVec)))
-}
-
 // Verify --
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
@@ -324,10 +248,4 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 // VerifyPop --
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
 	return C.blsVerifyPop(sign.getPointer(), pub.getPointer()) == 1
-}
-
-// DHKeyExchange --
-func DHKeyExchange(sec *SecretKey, pub *PublicKey) (out PublicKey) {
-	C.blsDHKeyExchange(out.getPointer(), sec.getPointer(), pub.getPointer())
-	return out
 }
