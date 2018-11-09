@@ -19,12 +19,13 @@ func main() {
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
-	log.Printf("Signature 1: %s", sign1.GetHexString())
+	log.Printf("Signature 1: 0x%x", sign1.GetHexString())
+	log.Printf("Signature 2: 0x%x", sign2.GetHexString())
 	sign1.Add(sign2)
-	log.Printf("Signature 1 + 2 Aggregation: %s", sign1.GetHexString())
+	log.Printf("Signature 1 + 2 Aggregation: 0x%x", sign1.GetHexString())
 	pub1.Add(pub2)
 	if !sign1.Verify(pub1, m) {
-		log.Fatal("Aggregate signature does not verify")
+		log.Fatal("Aggregate Signature Does Not Verify")
 	}
-	log.Fatal("Aggregate signature verifies correctly!")
+	log.Fatal("Aggregate Signature Verifies Correctly!")
 }
