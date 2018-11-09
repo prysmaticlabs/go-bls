@@ -16,7 +16,7 @@ git clone https://github.com/prysmaticlabs/go-bls
 
 #### Running With Go
 
-Make sure you have the latest version of Go installed along with [libgmp](https://gmplib.org/) required for precision arithmetic. Then, you can run the local bls tests using the go tool:
+Make sure you have the latest version of Go installed along with a c/c++ compiler and [libgmp](https://gmplib.org/) required for precision arithmetic. Then, you can run the local bls tests using the go tool:
 
 ```bash
 go test -bench .
