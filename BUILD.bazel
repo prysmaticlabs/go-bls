@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "bls.go",
-        "mcl.go",
+        "crypto.go",
         "mcl/include/mcl/bls.h",
         "mcl/include/mcl/bn.h", 
         "mcl/include/mcl/curve_type.h",
