@@ -2,6 +2,12 @@
 
 This repository is a go-wrapper around @herumi's BLS implementation using the underlying [herumi/mcl](https://github.com/herumi/mcl) cryptography library written in C++. The go wrapper is also based on @herumi's original BLS C++ project [herumi/bls](https://github.com/herumi/bls). The code was modified by Prysmatic Labs in order to integrate it into Ethereum's Serenity upgrade including Proof of Stake and Sharding.
 
+## Docs
+
+To see examples on how to use herumi's BLS library, see the `example/` directory in the repo containing single signature verification in addition to aggregate signature verification.
+
+See more information on Godoc [here](https://godoc.org/github.com/prysmaticlabs/go-bls).
+
 ## Installing
 
 ```bash
