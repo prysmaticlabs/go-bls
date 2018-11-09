@@ -1,0 +1,12 @@
+CVS
+java/*_wrap.cxx
+*.class
+GPATH
+GRTAGS
+GTAGS
+*.o
+*.d
+*.exe
+*.swp
+.cvsignore
+bazel-*

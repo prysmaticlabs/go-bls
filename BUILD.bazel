@@ -1,0 +1,35 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bls.go",
+        "mcl.go",
+        "mcl/include/mcl/bls.h",
+        "mcl/include/mcl/bn.h", 
+    ],
+    cdeps = [
+        "//:mcl-compiled-lib",
+    ],
+    cgo = True,
+    clinkopts = ["-lbls384_dy -lgmp -lstdc++"],
+    copts = ["-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL"],
+    importpath = "github.com/prysmaticlabs/go-bls",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["bls_test.go"],
+    embed = [":go_default_library"],
+)
+
+cc_library(
+  name = "mcl-compiled-lib",
+  srcs = [
+    "mcl/lib/libbls384.a",
+    "mcl/lib/libbls384_dy.so",
+  ],
+  includes = ["mcl/lib"],
+  visibility = ["//visibility:public"],
+)
