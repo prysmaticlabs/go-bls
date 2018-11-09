@@ -357,7 +357,7 @@ func testDHKeyExchange(t *testing.T) {
 }
 
 func test(t *testing.T, c int) {
-	err := Init(c)
+	err := initializeBLS(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -395,7 +395,7 @@ var curve = BLS12_381
 
 func BenchmarkPubkeyFromSeckey(b *testing.B) {
 	b.StopTimer()
-	err := Init(curve)
+	err := initializeBLS(curve)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -410,7 +410,7 @@ func BenchmarkPubkeyFromSeckey(b *testing.B) {
 
 func BenchmarkSigning(b *testing.B) {
 	b.StopTimer()
-	err := Init(curve)
+	err := initializeBLS(curve)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -425,7 +425,7 @@ func BenchmarkSigning(b *testing.B) {
 
 func BenchmarkValidation(b *testing.B) {
 	b.StopTimer()
-	err := Init(curve)
+	err := initializeBLS(curve)
 	if err != nil {
 		b.Fatal(err)
 	}
