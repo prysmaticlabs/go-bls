@@ -2,7 +2,7 @@ package bls
 
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL -I ${SRCDIR}/mcl/include/mcl -I ${SRCDIR}/mcl/lib
-#cgo LDFLAGS:-lgmp -lstdc++
+#cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lgmp -lstdc++
 #include "mcl/include/mcl/bls.h"
 */
 import "C"
