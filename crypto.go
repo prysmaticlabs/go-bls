@@ -8,19 +8,20 @@ import "C"
 import "fmt"
 import "unsafe"
 
-// CurveFp254BNb -- 254 bit curve
+// CurveFp254BNb -- 254 bit curve.
 const CurveFp254BNb = C.mclBn_CurveFp254BNb
 
-// CurveFp382_1 -- 382 bit curve 1
+// CurveFp382_1 -- 382 bit curve 1.
 const CurveFp382_1 = C.mclBn_CurveFp382_1
 
-// CurveFp382_2 -- 382 bit curve 2
+// CurveFp382_2 -- 382 bit curve 2.
 const CurveFp382_2 = C.mclBn_CurveFp382_2
 
-// BLS12_381 --
+// BLS12_381 Curve.
 const BLS12_381 = C.MCL_BLS12_381
 
-// IoSerializeHexStr --
+// IoSerializeHexStr -- serialization parameter for the underlying cryptographic
+// library created by @herumi.
 const IoSerializeHexStr = C.MCLBN_IO_SERIALIZE_HEX_STR
 
 // GetMaxOpUnitSize --
@@ -34,9 +35,8 @@ func GetOpUnitSize() int {
 	return int(C.mclBn_getOpUnitSize())
 }
 
-// GetCurveOrder --
-// return the order of G1
-func GetCurveOrder() string {
+// curveOrder returns the order of the group G1.
+func curveOrder() string {
 	buf := make([]byte, 1024)
 	// #nosec
 	n := C.mclBn_getCurveOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
@@ -46,9 +46,9 @@ func GetCurveOrder() string {
 	return string(buf[:n])
 }
 
-// GetFieldOrder --
-// return the characteristic of the field where a curve is defined
-func GetFieldOrder() string {
+// fieldOrder returns the characteristic of the field defining
+// a particular BLS curve.
+func fieldOrder() string {
 	buf := make([]byte, 1024)
 	// #nosec
 	n := C.mclBn_getFieldOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
@@ -58,31 +58,32 @@ func GetFieldOrder() string {
 	return string(buf[:n])
 }
 
-// Fr --
-type Fr struct {
+// fr represents a cryptographic group defined by the underlying
+// herumi MCL library.
+type fr struct {
 	v C.mclBnFr
 }
 
-// getPointer --
-func (x *Fr) getPointer() (p *C.mclBnFr) {
+// getPointer() returns the underlying cast getPointer() to a C struct.
+func (x *fr) getPointer() (p *C.mclBnFr) {
 	// #nosec
 	return (*C.mclBnFr)(unsafe.Pointer(x))
 }
 
-// Clear --
-func (x *Fr) Clear() {
+// clear the underlying C struct.
+func (x *fr) clear() {
 	// #nosec
 	C.mclBnFr_clear(x.getPointer())
 }
 
-// SetInt64 --
-func (x *Fr) SetInt64(v int64) {
+// setInt64 for the value of the underlying C struct's data.
+func (x *fr) setInt64(v int64) {
 	// #nosec
 	C.mclBnFr_setInt(x.getPointer(), C.int64_t(v))
 }
 
-// SetString --
-func (x *Fr) SetString(s string, base int) error {
+// setString of the underlying value in the C struct.
+func (x *fr) setString(s string, base int) error {
 	buf := []byte(s)
 	// #nosec
 	err := C.mclBnFr_setStr(x.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(base))
@@ -92,8 +93,8 @@ func (x *Fr) SetString(s string, base int) error {
 	return nil
 }
 
-// Deserialize --
-func (x *Fr) Deserialize(buf []byte) error {
+// deserialize the underlying C struct.
+func (x *fr) deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnFr_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err == 0 {
@@ -102,8 +103,9 @@ func (x *Fr) Deserialize(buf []byte) error {
 	return nil
 }
 
-// SetLittleEndian --
-func (x *Fr) SetLittleEndian(buf []byte) error {
+// setLittleEndian sets the value of the C struct's data from a little-endian
+// format bytes array.
+func (x *fr) setLittleEndian(buf []byte) error {
 	// #nosec
 	err := C.mclBnFr_setLittleEndian(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err != 0 {
@@ -112,37 +114,38 @@ func (x *Fr) SetLittleEndian(buf []byte) error {
 	return nil
 }
 
-// IsEqual --
-func (x *Fr) IsEqual(rhs *Fr) bool {
+// isEqual compares two fr values.
+func (x *fr) isEqual(rhs *fr) bool {
 	return C.mclBnFr_isEqual(x.getPointer(), rhs.getPointer()) == 1
 }
 
-// IsZero --
-func (x *Fr) IsZero() bool {
+// isZero checks if the underlying C data is empty.
+func (x *fr) isZero() bool {
 	return C.mclBnFr_isZero(x.getPointer()) == 1
 }
 
-// IsOne --
-func (x *Fr) IsOne() bool {
+// IsOne checks if the value of the underlying C data is non-empty.
+func (x *fr) isOne() bool {
 	return C.mclBnFr_isOne(x.getPointer()) == 1
 }
 
-// SetByCSPRNG --
-func (x *Fr) SetByCSPRNG() {
+// setByCSPRNG sets the underlying value using a cryptographically-secure
+// pseudorandom number generator.
+func (x *fr) setByCSPRNG() {
 	err := C.mclBnFr_setByCSPRNG(x.getPointer())
 	if err != 0 {
 		panic("err mclBnFr_setByCSPRNG")
 	}
 }
 
-// SetHashOf --
-func (x *Fr) SetHashOf(buf []byte) bool {
+// setHashOf using a byte slice.
+func (x *fr) setHashOf(buf []byte) bool {
 	// #nosec
 	return C.mclBnFr_setHashOf(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf))) == 0
 }
 
-// GetString --
-func (x *Fr) GetString(base int) string {
+// getString given an integer base.
+func (x *fr) getString(base int) string {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnFr_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
@@ -152,8 +155,8 @@ func (x *Fr) GetString(base int) string {
 	return string(buf[:n])
 }
 
-// Serialize --
-func (x *Fr) Serialize() []byte {
+// serialize into a byte-slice.
+func (x *fr) serialize() []byte {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnFr_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
@@ -163,55 +166,55 @@ func (x *Fr) Serialize() []byte {
 	return buf[:n]
 }
 
-// FrNeg --
-func FrNeg(out *Fr, x *Fr) {
+// frNeg negates the current value.
+func frNeg(out *fr, x *fr) {
 	C.mclBnFr_neg(out.getPointer(), x.getPointer())
 }
 
-// FrInv --
-func FrInv(out *Fr, x *Fr) {
+// frInv calculates the inverse.
+func frInv(out *fr, x *fr) {
 	C.mclBnFr_inv(out.getPointer(), x.getPointer())
 }
 
-// FrAdd --
-func FrAdd(out *Fr, x *Fr, y *Fr) {
+// frAdd two fr values.
+func frAdd(out *fr, x *fr, y *fr) {
 	C.mclBnFr_add(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// FrSub --
-func FrSub(out *Fr, x *Fr, y *Fr) {
+// frSub two fr values.
+func frSub(out *fr, x *fr, y *fr) {
 	C.mclBnFr_sub(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// FrMul --
-func FrMul(out *Fr, x *Fr, y *Fr) {
+// frMul two fr values.
+func frMul(out *fr, x *fr, y *fr) {
 	C.mclBnFr_mul(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// FrDiv --
-func FrDiv(out *Fr, x *Fr, y *Fr) {
+// frDiv two fr values.
+func frDiv(out *fr, x *fr, y *fr) {
 	C.mclBnFr_div(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G1 --
-type G1 struct {
+// g1 represents a group in the BLS signature scheme.
+type g1 struct {
 	v C.mclBnG1
 }
 
-// getPointer --
-func (x *G1) getPointer() (p *C.mclBnG1) {
+// getPointer() returns an underlying cast C-struct for the g1 group.
+func (x *g1) getPointer() (p *C.mclBnG1) {
 	// #nosec
 	return (*C.mclBnG1)(unsafe.Pointer(x))
 }
 
-// Clear --
-func (x *G1) Clear() {
+// clear the g1 values.
+func (x *g1) clear() {
 	// #nosec
 	C.mclBnG1_clear(x.getPointer())
 }
 
-// SetString --
-func (x *G1) SetString(s string, base int) error {
+// setString --
+func (x *g1) setString(s string, base int) error {
 	buf := []byte(s)
 	// #nosec
 	err := C.mclBnG1_setStr(x.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(base))
@@ -221,8 +224,8 @@ func (x *G1) SetString(s string, base int) error {
 	return nil
 }
 
-// Deserialize --
-func (x *G1) Deserialize(buf []byte) error {
+// deserialize --
+func (x *g1) deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnG1_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err == 0 {
@@ -231,18 +234,18 @@ func (x *G1) Deserialize(buf []byte) error {
 	return nil
 }
 
-// IsEqual --
-func (x *G1) IsEqual(rhs *G1) bool {
+// isEqual --
+func (x *g1) isEqual(rhs *g1) bool {
 	return C.mclBnG1_isEqual(x.getPointer(), rhs.getPointer()) == 1
 }
 
-// IsZero --
-func (x *G1) IsZero() bool {
+// isZero --
+func (x *g1) isZero() bool {
 	return C.mclBnG1_isZero(x.getPointer()) == 1
 }
 
-// HashAndMapTo --
-func (x *G1) HashAndMapTo(buf []byte) error {
+// hashAndMapTo --
+func (x *g1) hashAndMapTo(buf []byte) error {
 	// #nosec
 	err := C.mclBnG1_hashAndMapTo(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err != 0 {
@@ -251,8 +254,8 @@ func (x *G1) HashAndMapTo(buf []byte) error {
 	return nil
 }
 
-// GetString --
-func (x *G1) GetString(base int) string {
+// getString --
+func (x *g1) getString(base int) string {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG1_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
@@ -262,8 +265,8 @@ func (x *G1) GetString(base int) string {
 	return string(buf[:n])
 }
 
-// Serialize --
-func (x *G1) Serialize() []byte {
+// serialize --
+func (x *g1) serialize() []byte {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG1_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
@@ -273,55 +276,55 @@ func (x *G1) Serialize() []byte {
 	return buf[:n]
 }
 
-// G1Neg --
-func G1Neg(out *G1, x *G1) {
+// g1Neg --
+func g1Neg(out *g1, x *g1) {
 	C.mclBnG1_neg(out.getPointer(), x.getPointer())
 }
 
-// G1Dbl --
-func G1Dbl(out *G1, x *G1) {
+// g1Dbl --
+func g1Dbl(out *g1, x *g1) {
 	C.mclBnG1_dbl(out.getPointer(), x.getPointer())
 }
 
-// G1Add --
-func G1Add(out *G1, x *G1, y *G1) {
+// g1Add --
+func g1Add(out *g1, x *g1, y *g1) {
 	C.mclBnG1_add(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G1Sub --
-func G1Sub(out *G1, x *G1, y *G1) {
+// g1Sub --
+func g1Sub(out *g1, x *g1, y *g1) {
 	C.mclBnG1_sub(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G1Mul --
-func G1Mul(out *G1, x *G1, y *Fr) {
+// g1Mul --
+func g1Mul(out *g1, x *g1, y *fr) {
 	C.mclBnG1_mul(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G1MulCT -- constant time (depending on bit lengh of y)
-func G1MulCT(out *G1, x *G1, y *Fr) {
+// g1MulCT -- constant time (depending on bit lengh of y)
+func g1MulCT(out *g1, x *g1, y *fr) {
 	C.mclBnG1_mulCT(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G2 --
-type G2 struct {
+// g2 --
+type g2 struct {
 	v C.mclBnG2
 }
 
-// getPointer --
-func (x *G2) getPointer() (p *C.mclBnG2) {
+// getPointer() --
+func (x *g2) getPointer() (p *C.mclBnG2) {
 	// #nosec
 	return (*C.mclBnG2)(unsafe.Pointer(x))
 }
 
-// Clear --
-func (x *G2) Clear() {
+// clear --
+func (x *g2) Clear() {
 	// #nosec
 	C.mclBnG2_clear(x.getPointer())
 }
 
-// SetString --
-func (x *G2) SetString(s string, base int) error {
+// setString --
+func (x *g2) setString(s string, base int) error {
 	buf := []byte(s)
 	// #nosec
 	err := C.mclBnG2_setStr(x.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(base))
@@ -331,8 +334,8 @@ func (x *G2) SetString(s string, base int) error {
 	return nil
 }
 
-// Deserialize --
-func (x *G2) Deserialize(buf []byte) error {
+// deserialize --
+func (x *g2) deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnG2_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err == 0 {
@@ -341,18 +344,18 @@ func (x *G2) Deserialize(buf []byte) error {
 	return nil
 }
 
-// IsEqual --
-func (x *G2) IsEqual(rhs *G2) bool {
+// isEqual --
+func (x *g2) isEqual(rhs *g2) bool {
 	return C.mclBnG2_isEqual(x.getPointer(), rhs.getPointer()) == 1
 }
 
-// IsZero --
-func (x *G2) IsZero() bool {
+// isZero --
+func (x *g2) isZero() bool {
 	return C.mclBnG2_isZero(x.getPointer()) == 1
 }
 
-// HashAndMapTo --
-func (x *G2) HashAndMapTo(buf []byte) error {
+// hashAndMapTo --
+func (x *g2) hashAndMapTo(buf []byte) error {
 	// #nosec
 	err := C.mclBnG2_hashAndMapTo(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err != 0 {
@@ -361,8 +364,8 @@ func (x *G2) HashAndMapTo(buf []byte) error {
 	return nil
 }
 
-// GetString --
-func (x *G2) GetString(base int) string {
+// getString --
+func (x *g2) getString(base int) string {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG2_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
@@ -372,8 +375,8 @@ func (x *G2) GetString(base int) string {
 	return string(buf[:n])
 }
 
-// Serialize --
-func (x *G2) Serialize() []byte {
+// serialize --
+func (x *g2) serialize() []byte {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG2_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
@@ -383,56 +386,56 @@ func (x *G2) Serialize() []byte {
 	return buf[:n]
 }
 
-// G2Neg --
-func G2Neg(out *G2, x *G2) {
+// g2Neg --
+func g2Neg(out *g2, x *g2) {
 	C.mclBnG2_neg(out.getPointer(), x.getPointer())
 }
 
-// G2Dbl --
-func G2Dbl(out *G2, x *G2) {
+// g2Dbl --
+func g2Dbl(out *g2, x *g2) {
 	C.mclBnG2_dbl(out.getPointer(), x.getPointer())
 }
 
-// G2Add --
-func G2Add(out *G2, x *G2, y *G2) {
+// g2Add --
+func g2Add(out *g2, x *g2, y *g2) {
 	C.mclBnG2_add(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G2Sub --
-func G2Sub(out *G2, x *G2, y *G2) {
+// g2Sub --
+func g2Sub(out *g2, x *g2, y *g2) {
 	C.mclBnG2_sub(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// G2Mul --
-func G2Mul(out *G2, x *G2, y *Fr) {
+// g2Mul --
+func g2Mul(out *g2, x *g2, y *fr) {
 	C.mclBnG2_mul(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GT --
-type GT struct {
+// gT --
+type gT struct {
 	v C.mclBnGT
 }
 
-// getPointer --
-func (x *GT) getPointer() (p *C.mclBnGT) {
+// getPointer() --
+func (x *gT) getPointer() (p *C.mclBnGT) {
 	// #nosec
 	return (*C.mclBnGT)(unsafe.Pointer(x))
 }
 
-// Clear --
-func (x *GT) Clear() {
+// clear --
+func (x *gT) clear() {
 	// #nosec
 	C.mclBnGT_clear(x.getPointer())
 }
 
-// SetInt64 --
-func (x *GT) SetInt64(v int64) {
+// setInt64 --
+func (x *gT) setInt64(v int64) {
 	// #nosec
 	C.mclBnGT_setInt(x.getPointer(), C.int64_t(v))
 }
 
-// SetString --
-func (x *GT) SetString(s string, base int) error {
+// setString --
+func (x *gT) setString(s string, base int) error {
 	buf := []byte(s)
 	// #nosec
 	err := C.mclBnGT_setStr(x.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(base))
@@ -442,8 +445,8 @@ func (x *GT) SetString(s string, base int) error {
 	return nil
 }
 
-// Deserialize --
-func (x *GT) Deserialize(buf []byte) error {
+// deserialize --
+func (x *gT) deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnGT_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err == 0 {
@@ -452,23 +455,23 @@ func (x *GT) Deserialize(buf []byte) error {
 	return nil
 }
 
-// IsEqual --
-func (x *GT) IsEqual(rhs *GT) bool {
+// isEqual --
+func (x *gT) isEqual(rhs *gT) bool {
 	return C.mclBnGT_isEqual(x.getPointer(), rhs.getPointer()) == 1
 }
 
-// IsZero --
-func (x *GT) IsZero() bool {
+// isZero --
+func (x *gT) isZero() bool {
 	return C.mclBnGT_isZero(x.getPointer()) == 1
 }
 
-// IsOne --
-func (x *GT) IsOne() bool {
+// isOne --
+func (x *gT) isOne() bool {
 	return C.mclBnGT_isOne(x.getPointer()) == 1
 }
 
-// GetString --
-func (x *GT) GetString(base int) string {
+// getString --
+func (x *gT) getString(base int) string {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnGT_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
@@ -478,8 +481,8 @@ func (x *GT) GetString(base int) string {
 	return string(buf[:n])
 }
 
-// Serialize --
-func (x *GT) Serialize() []byte {
+// serialize --
+func (x *gT) serialize() []byte {
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnGT_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
@@ -489,81 +492,81 @@ func (x *GT) Serialize() []byte {
 	return buf[:n]
 }
 
-// GTNeg --
-func GTNeg(out *GT, x *GT) {
+// gTNeg --
+func gTNeg(out *gT, x *gT) {
 	C.mclBnGT_neg(out.getPointer(), x.getPointer())
 }
 
-// GTInv --
-func GTInv(out *GT, x *GT) {
+// gTInv --
+func gTInv(out *gT, x *gT) {
 	C.mclBnGT_inv(out.getPointer(), x.getPointer())
 }
 
-// GTAdd --
-func GTAdd(out *GT, x *GT, y *GT) {
+// gTAdd --
+func gTAdd(out *gT, x *gT, y *gT) {
 	C.mclBnGT_add(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GTSub --
-func GTSub(out *GT, x *GT, y *GT) {
+// gTSub --
+func gTSub(out *gT, x *gT, y *gT) {
 	C.mclBnGT_sub(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GTMul --
-func GTMul(out *GT, x *GT, y *GT) {
+// gTMul --
+func gTMul(out *gT, x *gT, y *gT) {
 	C.mclBnGT_mul(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GTDiv --
-func GTDiv(out *GT, x *GT, y *GT) {
+// gTDiv --
+func gTDiv(out *gT, x *gT, y *gT) {
 	C.mclBnGT_div(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GTPow --
-func GTPow(out *GT, x *GT, y *Fr) {
+// gTPow --
+func gTPow(out *gT, x *gT, y *fr) {
 	C.mclBnGT_pow(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// Pairing --
-func Pairing(out *GT, x *G1, y *G2) {
+// pairing --
+func pairing(out *gT, x *g1, y *g2) {
 	C.mclBn_pairing(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// FinalExp --
-func FinalExp(out *GT, x *GT) {
+// finalExp --
+func finalExp(out *gT, x *gT) {
 	C.mclBn_finalExp(out.getPointer(), x.getPointer())
 }
 
-// MillerLoop --
-func MillerLoop(out *GT, x *G1, y *G2) {
+// millerLoop --
+func millerLoop(out *gT, x *g1, y *g2) {
 	C.mclBn_millerLoop(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
-// GetUint64NumToPrecompute --
-func GetUint64NumToPrecompute() int {
+// getUint64NumToPrecompute --
+func getUint64NumToPrecompute() int {
 	return int(C.mclBn_getUint64NumToPrecompute())
 }
 
-// PrecomputeG2 --
-func PrecomputeG2(Qbuf []uint64, Q *G2) {
+// precomputeG2 --
+func precomputeG2(Qbuf []uint64, Q *g2) {
 	// #nosec
 	C.mclBn_precomputeG2((*C.uint64_t)(unsafe.Pointer(&Qbuf[0])), Q.getPointer())
 }
 
-// PrecomputedMillerLoop --
-func PrecomputedMillerLoop(out *GT, P *G1, Qbuf []uint64) {
+// precomputedMillerLoop --
+func precomputedMillerLoop(out *gT, P *g1, Qbuf []uint64) {
 	// #nosec
 	C.mclBn_precomputedMillerLoop(out.getPointer(), P.getPointer(), (*C.uint64_t)(unsafe.Pointer(&Qbuf[0])))
 }
 
-// PrecomputedMillerLoop2 --
-func PrecomputedMillerLoop2(out *GT, P1 *G1, Q1buf []uint64, P2 *G1, Q2buf []uint64) {
+// precomputedMillerLoop2 --
+func precomputedMillerLoop2(out *gT, P1 *g1, Q1buf []uint64, P2 *g1, Q2buf []uint64) {
 	// #nosec
 	C.mclBn_precomputedMillerLoop2(out.getPointer(), P1.getPointer(), (*C.uint64_t)(unsafe.Pointer(&Q1buf[0])), P1.getPointer(), (*C.uint64_t)(unsafe.Pointer(&Q1buf[0])))
 }
 
-// FrEvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
-func FrEvaluatePolynomial(y *Fr, c []Fr, x *Fr) error {
+// frEvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
+func frEvaluatePolynomial(y *fr, c []fr, x *fr) error {
 	// #nosec
 	err := C.mclBn_FrEvaluatePolynomial(y.getPointer(), (*C.mclBnFr)(unsafe.Pointer(&c[0])), (C.size_t)(len(c)), x.getPointer())
 	if err != 0 {
@@ -572,8 +575,8 @@ func FrEvaluatePolynomial(y *Fr, c []Fr, x *Fr) error {
 	return nil
 }
 
-// G1EvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
-func G1EvaluatePolynomial(y *G1, c []G1, x *Fr) error {
+// g1EvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
+func g1EvaluatePolynomial(y *g1, c []g1, x *fr) error {
 	// #nosec
 	err := C.mclBn_G1EvaluatePolynomial(y.getPointer(), (*C.mclBnG1)(unsafe.Pointer(&c[0])), (C.size_t)(len(c)), x.getPointer())
 	if err != 0 {
@@ -582,8 +585,8 @@ func G1EvaluatePolynomial(y *G1, c []G1, x *Fr) error {
 	return nil
 }
 
-// G2EvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
-func G2EvaluatePolynomial(y *G2, c []G2, x *Fr) error {
+// g2EvaluatePolynomial -- y = c[0] + c[1] * x + c[2] * x^2 + ...
+func g2EvaluatePolynomial(y *g2, c []g2, x *fr) error {
 	// #nosec
 	err := C.mclBn_G2EvaluatePolynomial(y.getPointer(), (*C.mclBnG2)(unsafe.Pointer(&c[0])), (C.size_t)(len(c)), x.getPointer())
 	if err != 0 {
@@ -592,8 +595,8 @@ func G2EvaluatePolynomial(y *G2, c []G2, x *Fr) error {
 	return nil
 }
 
-// FrLagrangeInterpolation --
-func FrLagrangeInterpolation(out *Fr, xVec []Fr, yVec []Fr) error {
+// frLagrangeInterpolation --
+func frLagrangeInterpolation(out *fr, xVec []fr, yVec []fr) error {
 	if len(xVec) != len(yVec) {
 		return fmt.Errorf("err FrLagrangeInterpolation:bad size")
 	}
@@ -605,8 +608,8 @@ func FrLagrangeInterpolation(out *Fr, xVec []Fr, yVec []Fr) error {
 	return nil
 }
 
-// G1LagrangeInterpolation --
-func G1LagrangeInterpolation(out *G1, xVec []Fr, yVec []G1) error {
+// g1LagrangeInterpolation --
+func g1LagrangeInterpolation(out *g1, xVec []fr, yVec []g1) error {
 	if len(xVec) != len(yVec) {
 		return fmt.Errorf("err G1LagrangeInterpolation:bad size")
 	}
@@ -618,8 +621,8 @@ func G1LagrangeInterpolation(out *G1, xVec []Fr, yVec []G1) error {
 	return nil
 }
 
-// G2LagrangeInterpolation --
-func G2LagrangeInterpolation(out *G2, xVec []Fr, yVec []G2) error {
+// g2LagrangeInterpolation --
+func g2LagrangeInterpolation(out *g2, xVec []fr, yVec []g2) error {
 	if len(xVec) != len(yVec) {
 		return fmt.Errorf("err G2LagrangeInterpolation:bad size")
 	}

@@ -29,7 +29,7 @@ func initializeBLS(curve int) error {
 
 // SecretKey --
 type SecretKey struct {
-	v Fr
+	v fr
 }
 
 // getPointer --
@@ -40,57 +40,57 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 
 // GetLittleEndian --
 func (sec *SecretKey) GetLittleEndian() []byte {
-	return sec.v.Serialize()
+	return sec.v.serialize()
 }
 
 // SetLittleEndian --
 func (sec *SecretKey) SetLittleEndian(buf []byte) error {
-	return sec.v.SetLittleEndian(buf)
+	return sec.v.setLittleEndian(buf)
 }
 
 // SerializeToHexStr --
 func (sec *SecretKey) SerializeToHexStr() string {
-	return sec.v.GetString(IoSerializeHexStr)
+	return sec.v.getString(IoSerializeHexStr)
 }
 
 // DeserializeHexStr --
 func (sec *SecretKey) DeserializeHexStr(s string) error {
-	return sec.v.SetString(s, IoSerializeHexStr)
+	return sec.v.setString(s, IoSerializeHexStr)
 }
 
 // GetHexString --
 func (sec *SecretKey) GetHexString() string {
-	return sec.v.GetString(16)
+	return sec.v.getString(16)
 }
 
 // GetDecString --
 func (sec *SecretKey) GetDecString() string {
-	return sec.v.GetString(10)
+	return sec.v.getString(10)
 }
 
 // SetHexString --
 func (sec *SecretKey) SetHexString(s string) error {
-	return sec.v.SetString(s, 16)
+	return sec.v.setString(s, 16)
 }
 
 // SetDecString --
 func (sec *SecretKey) SetDecString(s string) error {
-	return sec.v.SetString(s, 10)
+	return sec.v.setString(s, 10)
 }
 
 // IsEqual --
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
-	return sec.v.IsEqual(&rhs.v)
+	return sec.v.isEqual(&rhs.v)
 }
 
 // SetByCSPRNG --
 func (sec *SecretKey) SetByCSPRNG() {
-	sec.v.SetByCSPRNG()
+	sec.v.setByCSPRNG()
 }
 
 // Add --
 func (sec *SecretKey) Add(rhs *SecretKey) {
-	FrAdd(&sec.v, &sec.v, &rhs.v)
+	frAdd(&sec.v, &sec.v, &rhs.v)
 }
 
 // GetMasterSecretKey --
@@ -115,7 +115,7 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 
 // PublicKey --
 type PublicKey struct {
-	v G2
+	v g2
 }
 
 // getPointer --
@@ -126,47 +126,47 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 
 // Serialize --
 func (pub *PublicKey) Serialize() []byte {
-	return pub.v.Serialize()
+	return pub.v.serialize()
 }
 
 // Deserialize --
 func (pub *PublicKey) Deserialize(buf []byte) error {
-	return pub.v.Deserialize(buf)
+	return pub.v.deserialize(buf)
 }
 
 // SerializeToHexStr --
 func (pub *PublicKey) SerializeToHexStr() string {
-	return pub.v.GetString(IoSerializeHexStr)
+	return pub.v.getString(IoSerializeHexStr)
 }
 
 // DeserializeHexStr --
 func (pub *PublicKey) DeserializeHexStr(s string) error {
-	return pub.v.SetString(s, IoSerializeHexStr)
+	return pub.v.setString(s, IoSerializeHexStr)
 }
 
 // GetHexString --
 func (pub *PublicKey) GetHexString() string {
-	return pub.v.GetString(16)
+	return pub.v.getString(16)
 }
 
 // SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
-	return pub.v.SetString(s, 16)
+	return pub.v.setString(s, 16)
 }
 
 // IsEqual --
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
-	return pub.v.IsEqual(&rhs.v)
+	return pub.v.isEqual(&rhs.v)
 }
 
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
-	G2Add(&pub.v, &pub.v, &rhs.v)
+	g2Add(&pub.v, &pub.v, &rhs.v)
 }
 
 // Sign  --
 type Sign struct {
-	v G1
+	v g1
 }
 
 // getPointer --
@@ -177,37 +177,37 @@ func (sign *Sign) getPointer() (p *C.blsSignature) {
 
 // Serialize --
 func (sign *Sign) Serialize() []byte {
-	return sign.v.Serialize()
+	return sign.v.serialize()
 }
 
 // Deserialize --
 func (sign *Sign) Deserialize(buf []byte) error {
-	return sign.v.Deserialize(buf)
+	return sign.v.deserialize(buf)
 }
 
 // SerializeToHexStr --
 func (sign *Sign) SerializeToHexStr() string {
-	return sign.v.GetString(IoSerializeHexStr)
+	return sign.v.getString(IoSerializeHexStr)
 }
 
 // DeserializeHexStr --
 func (sign *Sign) DeserializeHexStr(s string) error {
-	return sign.v.SetString(s, IoSerializeHexStr)
+	return sign.v.setString(s, IoSerializeHexStr)
 }
 
 // GetHexString --
 func (sign *Sign) GetHexString() string {
-	return sign.v.GetString(16)
+	return sign.v.getString(16)
 }
 
 // SetHexString --
 func (sign *Sign) SetHexString(s string) error {
-	return sign.v.SetString(s, 16)
+	return sign.v.setString(s, 16)
 }
 
 // IsEqual --
 func (sign *Sign) IsEqual(rhs *Sign) bool {
-	return sign.v.IsEqual(&rhs.v)
+	return sign.v.isEqual(&rhs.v)
 }
 
 // GetPublicKey --

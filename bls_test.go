@@ -6,7 +6,6 @@ import "strconv"
 var unitN = 0
 
 // Tests (for Benchmarks see below)
-
 func testPre(t *testing.T) {
 	t.Log("create secret key")
 	m := "this is a bls sample for go"
@@ -211,11 +210,11 @@ func testOrder(t *testing.T, c int) {
 	} else {
 		t.Fatal("bad c", c)
 	}
-	s := GetCurveOrder()
+	s := curveOrder()
 	if s != curve {
 		t.Errorf("bad curve order\n%s\n%s\n", s, curve)
 	}
-	s = GetFieldOrder()
+	s = fieldOrder()
 	if s != field {
 		t.Errorf("bad field order\n%s\n%s\n", s, field)
 	}
