@@ -11,12 +11,12 @@ func testPre(t *testing.T) {
 	m := "this is a bls sample for go"
 	var sec SecretKey
 	sec.SetByCSPRNG()
-	t.Log("sec:", sec.GetHexString())
+	t.Log("sec:", sec.HexString())
 	t.Log("create public key")
 	pub := sec.GetPublicKey()
-	t.Log("pub:", pub.GetHexString())
+	t.Log("pub:", pub.HexString())
 	sign := sec.Sign(m)
-	t.Log("sign:", sign.GetHexString())
+	t.Log("sign:", sign.HexString())
 	if !sign.Verify(pub, m) {
 		t.Error("Signature does not verify")
 	}
@@ -26,7 +26,7 @@ func testPre(t *testing.T) {
 		sec := make([]SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
 			sec[i].SetByCSPRNG()
-			t.Log("sec=", sec[i].GetHexString())
+			t.Log("sec=", sec[i].HexString())
 		}
 	}
 }
@@ -44,10 +44,10 @@ func testStringConversion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s != sec.GetDecString() {
+	if s != sec.DecString() {
 		t.Error("not equal")
 	}
-	s = sec.GetHexString()
+	s = sec.HexString()
 	var sec2 SecretKey
 	err = sec2.SetHexString(s)
 	if err != nil {
@@ -71,10 +71,10 @@ func testEachSign(t *testing.T, m string) ([]SecretKey, []PublicKey, []Sign) {
 		}
 
 		pubVec[i] = *secVec[i].GetPublicKey()
-		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
+		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].HexString())
 
 		if !pubVec[i].IsEqual(secVec[i].GetPublicKey()) {
-			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
+			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].HexString(), secVec[i].GetPublicKey().HexString())
 		}
 
 		signVec[i] = *secVec[i].Sign(m)
