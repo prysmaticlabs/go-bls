@@ -113,9 +113,9 @@ func testAdd(t *testing.T) {
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
-	t.Log("sign1    :", sign1.GetHexString())
+	t.Log("sign1    :", sign1.HexString())
 	sign1.Add(sign2)
-	t.Log("sign1 add:", sign1.GetHexString())
+	t.Log("sign1 add:", sign1.HexString())
 	pub1.Add(pub2)
 	if !sign1.Verify(pub1, m) {
 		t.Fail()
@@ -126,7 +126,7 @@ func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
 	sec1.SetByCSPRNG()
-	b := sec1.GetLittleEndian()
+	b := sec1.LittleEndian()
 	err := sec2.SetLittleEndian(b)
 	if err != nil {
 		t.Fatal(err)
