@@ -27,5 +27,5 @@ func main() {
 	if !sign1.Verify(pub1, m) {
 		log.Fatal("Aggregate Signature Does Not Verify")
 	}
-	log.Fatal("Aggregate Signature Verifies Correctly!")
+	log.Println("Aggregate Signature Verifies Correctly!")
 }
