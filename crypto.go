@@ -633,3 +633,10 @@ func g2LagrangeInterpolation(out *g2, xVec []fr, yVec []g2) error {
 	}
 	return nil
 }
+
+// HashAndMapToG2 takes a byte slice of a message and attempts to hash it
+// and map the output into the G2 Group.
+func HashAndMapToG2(m []byte) error {
+	var group g2
+	return group.hashAndMapTo(m)
+}
