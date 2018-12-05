@@ -100,9 +100,10 @@ $(BLS384_256_LIB): $(OBJ_DIR)/bls_c384_256.o
 FUNC_LIST=src/func.list
 ifeq ($(findstring $(OS),mingw64/cygwin),)
   MCL_USE_LLVM?=1
-  BLS256_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
-  BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
-  BLS384_256_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
+	COMMON_LIB=$(GMP_LIB) $(OPENSSL_LIB) -lstdc++
+  BLS256_SLIB_LDFLAGS+=$(COMMON_LIB)
+  BLS384_SLIB_LDFLAGS+=$(COMMON_LIB)
+  BLS384_256_SLIB_LDFLAGS+=$(COMMON_LIB)
 else
   MCL_USE_LLVM=0
   BLS256_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS256_SNAME).a
