@@ -1,10 +1,6 @@
 #include <mcl/op.hpp>
 #include <mcl/util.hpp>
-#ifdef MCL_DONT_USE_OPENSSL
 #include <cybozu/sha2.hpp>
-#else
-#include <cybozu/crypto.hpp>
-#endif
 #include <cybozu/endian.hpp>
 #include <mcl/conversion.hpp>
 #ifdef MCL_USE_XBYAK
@@ -120,45 +116,15 @@ bool isEnableJIT()
 #endif
 }
 
-void getRandVal(bool *pb, void *p, RandGen& rg, const Unit *in, size_t bitSize)
-{
-	if (rg.isZero()) rg = RandGen::get();
-	Unit *out = reinterpret_cast<Unit*>(p);
-	const size_t n = (bitSize + UnitBitSize - 1) / UnitBitSize;
-	const size_t rem = bitSize & (UnitBitSize - 1);
-	assert(n > 0);
-	for (;;) {
-		rg.read(pb, out, n * sizeof(Unit)); // byte size
-		if (!*pb) return;
-		if (rem > 0) out[n - 1] &= (Unit(1) << rem) - 1;
-		if (isLessArray(out, in, n)) return;
-	}
-}
-
 uint32_t sha256(void *out, uint32_t maxOutSize, const void *msg, uint32_t msgSize)
 {
-	const uint32_t hashSize = 256 / 8;
-	if (maxOutSize < hashSize) return 0;
-#ifdef MCL_DONT_USE_OPENSSL
-	cybozu::Sha256(msg, msgSize).get(out);
-#else
-	cybozu::crypto::Hash::digest(out, cybozu::crypto::Hash::N_SHA256, msg, msgSize);
-#endif
-	return hashSize;
+	return (uint32_t)cybozu::Sha256().digest(out, maxOutSize, msg, msgSize);
 }
 
 uint32_t sha512(void *out, uint32_t maxOutSize, const void *msg, uint32_t msgSize)
 {
-	const uint32_t hashSize = 512 / 8;
-	if (maxOutSize < hashSize) return 0;
-#ifdef MCL_DONT_USE_OPENSSL
-	cybozu::Sha512(msg, msgSize).get(out);
-#else
-	cybozu::crypto::Hash::digest(out, cybozu::crypto::Hash::N_SHA512, msg, msgSize);
-#endif
-	return hashSize;
+	return (uint32_t)cybozu::Sha512().digest(out, maxOutSize, msg, msgSize);
 }
-
 
 #ifndef MCL_USE_VINT
 static inline void set_mpz_t(mpz_t& z, const Unit* p, int n)
@@ -362,7 +328,7 @@ static bool initForMont(Op& op, const Unit *p, Mode mode)
 	return true;
 }
 
-bool Op::init(const mpz_class& _p, size_t maxBitSize, Mode mode, size_t mclMaxBitSize)
+bool Op::init(const mpz_class& _p, size_t maxBitSize, int _xi_a, Mode mode, size_t mclMaxBitSize)
 {
 	if (mclMaxBitSize != MCL_MAX_BIT_SIZE) return false;
 #ifdef MCL_USE_VINT
@@ -384,6 +350,7 @@ bool Op::init(const mpz_class& _p, size_t maxBitSize, Mode mode, size_t mclMaxBi
 	mp = _p;
 	bitSize = gmp::getBitSize(mp);
 	pmod4 = gmp::getUnit(mp, 0) % 4;
+	this->xi_a = _xi_a;
 /*
 	priority : MCL_USE_XBYAK > MCL_USE_LLVM > none
 	Xbyak > llvm_mont > llvm > gmp_mont > gmp
@@ -652,11 +619,6 @@ int64_t getInt64(bool *pb, fp::Block& b, const fp::Op& op)
 #ifdef _MSC_VER
 	#pragma warning(pop)
 #endif
-
-void Op::initFp2(int _xi_a)
-{
-	this->xi_a = _xi_a;
-}
 
 } } // mcl::fp
 

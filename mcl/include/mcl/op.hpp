@@ -10,12 +10,12 @@
 #include <memory.h>
 #include <mcl/array.hpp>
 
-#define MCL_DONT_USE_OPENSSL
 #ifndef MCL_MAX_BIT_SIZE
 	#define MCL_MAX_BIT_SIZE 521
 #endif
 #if defined(__EMSCRIPTEN__) || defined(__wasm__)
 	#define MCL_DONT_USE_XBYAK
+	#define MCL_DONT_USE_OPENSSL
 #endif
 #if !defined(MCL_DONT_USE_XBYAK) && (defined(_WIN64) || defined(__x86_64__)) && (MCL_SIZEOF_UNIT == 8)
 	#define MCL_USE_XBYAK
@@ -341,8 +341,7 @@ struct Op {
 		*/
 		fp_mul(y, x, R2, p);
 	}
-	bool init(const mpz_class& p, size_t maxBitSize, Mode mode, size_t mclMaxBitSize = MCL_MAX_BIT_SIZE);
-	void initFp2(int xi_a);
+	bool init(const mpz_class& p, size_t maxBitSize, int xi_a, Mode mode, size_t mclMaxBitSize = MCL_MAX_BIT_SIZE);
 #ifdef MCL_USE_XBYAK
 	static FpGenerator* createFpGenerator();
 	static void destroyFpGenerator(FpGenerator *fg);

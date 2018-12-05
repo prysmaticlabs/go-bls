@@ -70,16 +70,6 @@ inline void dumpUnit(Unit x)
 
 bool isEnableJIT(); // 1st call is not threadsafe
 
-void getRandVal(bool *pb, void *p, RandGen& rg, const Unit *in, size_t bitSize);
-#ifndef CYBOZU_DONT_USE_EXCEPTION
-inline void getRandVal(void *p, RandGen& rg, const Unit *in, size_t bitSize)
-{
-	bool b;
-	getRandVal(&b, p, rg, in, bitSize);
-	if (!b) throw cybozu::Exception("getRandVal") << bitSize;
-}
-#endif
-
 uint32_t sha256(void *out, uint32_t maxOutSize, const void *msg, uint32_t msgSize);
 uint32_t sha512(void *out, uint32_t maxOutSize, const void *msg, uint32_t msgSize);
 
@@ -120,10 +110,14 @@ public:
 		}
 		printf("\n");
 	}
-	static inline void init(bool *pb, const mpz_class& _p, fp::Mode mode = fp::FP_AUTO)
+	/*
+		xi_a is used for Fp2::mul_xi(), where xi = xi_a + i and i^2 = -1
+		if xi_a = 0 then asm functions for Fp2 are not generated.
+	*/
+	static inline void init(bool *pb, int xi_a, const mpz_class& p, fp::Mode mode = fp::FP_AUTO)
 	{
 		assert(maxBitSize <= MCL_MAX_BIT_SIZE);
-		*pb = op_.init(_p, maxBitSize, mode);
+		*pb = op_.init(p, maxBitSize, xi_a, mode);
 		if (!*pb) return;
 		{ // set oneRep
 			FpT& one = *reinterpret_cast<FpT*>(op_.oneRep);
@@ -150,6 +144,10 @@ public:
 		if (sqr == 0) sqr = sqrC;
 #endif
 		*pb = true;
+	}
+	static inline void init(bool *pb, const mpz_class& p, fp::Mode mode = fp::FP_AUTO)
+	{
+		init(pb, 0, p, mode);
 	}
 	static inline void init(bool *pb, const char *mstr, fp::Mode mode = fp::FP_AUTO)
 	{
@@ -342,9 +340,9 @@ public:
 	void setByCSPRNG(bool *pb, fp::RandGen rg = fp::RandGen())
 	{
 		if (rg.isZero()) rg = fp::RandGen::get();
-		fp::getRandVal(pb, v_, rg, op_.p, op_.bitSize);
-		if (!*pb) return;
-		toMont();
+		rg.read(pb, v_, op_.N * sizeof(Unit)); // byte size
+		if (!pb) return;
+		setArrayMask(v_, op_.N);
 	}
 #ifndef CYBOZU_DONT_USE_EXCEPTION
 	void setByCSPRNG(fp::RandGen rg = fp::RandGen())
@@ -539,17 +537,25 @@ public:
 	}
 #endif
 #ifndef CYBOZU_DONT_USE_EXCEPTION
-	static inline void init(const mpz_class& _p, fp::Mode mode = fp::FP_AUTO)
+	static inline void init(int xi_a, const mpz_class& p, fp::Mode mode = fp::FP_AUTO)
 	{
 		bool b;
-		init(&b, _p, mode);
+		init(&b, xi_a, p, mode);
 		if (!b) throw cybozu::Exception("Fp:init");
+	}
+	static inline void init(int xi_a, const std::string& mstr, fp::Mode mode = fp::FP_AUTO)
+	{
+		mpz_class p;
+		gmp::setStr(p, mstr);
+		init(xi_a, p, mode);
+	}
+	static inline void init(const mpz_class& p, fp::Mode mode = fp::FP_AUTO)
+	{
+		init(0, p, mode);
 	}
 	static inline void init(const std::string& mstr, fp::Mode mode = fp::FP_AUTO)
 	{
-		bool b;
-		init(&b, mstr.c_str(), mode);
-		if (!b) throw cybozu::Exception("Fp:init");
+		init(0, mstr, mode);
 	}
 	template<class OutputStream>
 	void save(OutputStream& os, int ioMode = IoSerialize) const
