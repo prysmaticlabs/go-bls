@@ -89,7 +89,7 @@ typedef struct {
 
 #endif
 
-#include <mcl/curve_type.h>
+#include "curve_type.h"
 
 #define MCLBN_IO_SERIALIZE_HEX_STR 2048
 // for backword compatibility
