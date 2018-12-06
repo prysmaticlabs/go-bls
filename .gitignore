@@ -1,5 +1,2 @@
 bazel-*
-
-*.a
-*.so
-*.dylib
+.vscode

@@ -8,6 +8,14 @@
 */
 #include "bn.h"
 
+#ifdef BLS_SWAP_G
+	/*
+		error if BLS_SWAP_G is inconsistently used between library and exe
+	*/
+	#undef MCLBN_COMPILED_TIME_VAR
+	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + 100)
+#endif
+
 #ifdef _MSC_VER
 	#ifdef BLS_DONT_EXPORT
 		#define BLS_DLL_API
@@ -46,11 +54,19 @@ typedef struct {
 } blsSecretKey;
 
 typedef struct {
+#ifdef BLS_SWAP_G
+	mclBnG1 v;
+#else
 	mclBnG2 v;
+#endif
 } blsPublicKey;
 
 typedef struct {
+#ifdef BLS_SWAP_G
+	mclBnG2 v;
+#else
 	mclBnG1 v;
+#endif
 } blsSignature;
 
 /*
@@ -162,8 +178,13 @@ BLS_DLL_API int blsGetG1ByteSize(void);
 // return bytes for serialized Fr
 BLS_DLL_API int blsGetFrByteSize(void);
 
+#ifdef BLS_SWAP_G
+// get a generator of G1
+BLS_DLL_API void blsGetGeneratorOfG1(blsPublicKey *pub);
+#else
 // get a generator of G2
 BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
+#endif
 
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);

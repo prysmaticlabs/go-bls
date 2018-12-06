@@ -2,7 +2,7 @@ package bls
 
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL -I ${SRCDIR}/mcl/include/mcl -I ${SRCDIR}/mcl/lib
-#cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lgmp -lstdc++
+#cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lstdc++
 #include "mcl/include/mcl/bls.h"
 */
 import "C"
@@ -29,7 +29,7 @@ func initializeBLS(curve int) error {
 
 // SecretKey --
 type SecretKey struct {
-	v Fr
+	v fr
 }
 
 // getPointer --
@@ -38,62 +38,66 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(sec))
 }
 
-// GetLittleEndian --
-func (sec *SecretKey) GetLittleEndian() []byte {
-	return sec.v.Serialize()
+// LittleEndian returns the serialized, little-endian formatted byte slice
+// of the secret key.
+func (sec *SecretKey) LittleEndian() []byte {
+	return sec.v.serialize()
 }
 
-// SetLittleEndian --
+// SetLittleEndian sets a secret key based on a little-endian formatted
+// byte slice.
 func (sec *SecretKey) SetLittleEndian(buf []byte) error {
-	return sec.v.SetLittleEndian(buf)
+	return sec.v.setLittleEndian(buf)
 }
 
-// SerializeToHexStr --
+// SerializeToHexStr returns a hex string representation of a private key.
 func (sec *SecretKey) SerializeToHexStr() string {
-	return sec.v.GetString(IoSerializeHexStr)
+	return sec.v.getString(IoSerializeHexStr)
 }
 
-// DeserializeHexStr --
+// DeserializeHexStr deserializes a hex string into a private key.
 func (sec *SecretKey) DeserializeHexStr(s string) error {
-	return sec.v.SetString(s, IoSerializeHexStr)
+	return sec.v.setString(s, IoSerializeHexStr)
 }
 
-// GetHexString --
-func (sec *SecretKey) GetHexString() string {
-	return sec.v.GetString(16)
+// HexString returns the hex string of the private key.
+func (sec *SecretKey) HexString() string {
+	return sec.v.getString(16)
 }
 
-// GetDecString --
-func (sec *SecretKey) GetDecString() string {
-	return sec.v.GetString(10)
+// DecString returns a decimal string representation of the private key.
+func (sec *SecretKey) DecString() string {
+	return sec.v.getString(10)
 }
 
-// SetHexString --
+// SetHexString sets a private key based on a hex string.
 func (sec *SecretKey) SetHexString(s string) error {
-	return sec.v.SetString(s, 16)
+	return sec.v.setString(s, 16)
 }
 
-// SetDecString --
+// SetDecString sets a private key based on a decimal string.
 func (sec *SecretKey) SetDecString(s string) error {
-	return sec.v.SetString(s, 10)
+	return sec.v.setString(s, 10)
 }
 
-// IsEqual --
+// IsEqual compares two private keys.
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
-	return sec.v.IsEqual(&rhs.v)
+	return sec.v.isEqual(&rhs.v)
 }
 
-// SetByCSPRNG --
+// SetByCSPRNG sets a private key's internal representation using a
+// cryptographically-secure, pseudorandom number generator.
 func (sec *SecretKey) SetByCSPRNG() {
-	sec.v.SetByCSPRNG()
+	sec.v.setByCSPRNG()
 }
 
-// Add --
+// Add two private keys together.
 func (sec *SecretKey) Add(rhs *SecretKey) {
-	FrAdd(&sec.v, &sec.v, &rhs.v)
+	frAdd(&sec.v, &sec.v, &rhs.v)
 }
 
-// GetMasterSecretKey --
+// GetMasterSecretKey creates a series of k secret keys and using a
+// pseudorandom number generator and returns them as a slice.
 func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	msk = make([]SecretKey, k)
 	msk[0] = *sec
@@ -103,7 +107,8 @@ func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	return msk
 }
 
-// GetMasterPublicKey --
+// GetMasterPublicKey returns a list of public keys for a slice of
+// private keys.
 func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	n := len(msk)
 	mpk = make([]PublicKey, n)
@@ -113,9 +118,9 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	return mpk
 }
 
-// PublicKey --
+// PublicKey definition in the BLS scheme.
 type PublicKey struct {
-	v G2
+	v g2
 }
 
 // getPointer --
@@ -124,49 +129,49 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	return (*C.blsPublicKey)(unsafe.Pointer(pub))
 }
 
-// Serialize --
+// Serialize a public key into a byte slice.
 func (pub *PublicKey) Serialize() []byte {
-	return pub.v.Serialize()
+	return pub.v.serialize()
 }
 
-// Deserialize --
+// Deserialize converts a byte slice into a public key.
 func (pub *PublicKey) Deserialize(buf []byte) error {
-	return pub.v.Deserialize(buf)
+	return pub.v.deserialize(buf)
 }
 
-// SerializeToHexStr --
+// SerializeToHexStr returns a hex string serialization of a public key.
 func (pub *PublicKey) SerializeToHexStr() string {
-	return pub.v.GetString(IoSerializeHexStr)
+	return pub.v.getString(IoSerializeHexStr)
 }
 
-// DeserializeHexStr --
+// DeserializeHexStr sets a public key from a hex string.
 func (pub *PublicKey) DeserializeHexStr(s string) error {
-	return pub.v.SetString(s, IoSerializeHexStr)
+	return pub.v.setString(s, IoSerializeHexStr)
 }
 
-// GetHexString --
-func (pub *PublicKey) GetHexString() string {
-	return pub.v.GetString(16)
+// HexString returns the hex string representation of a public key.
+func (pub *PublicKey) HexString() string {
+	return pub.v.getString(16)
 }
 
-// SetHexString --
+// SetHexString sets a public key from a hex string.
 func (pub *PublicKey) SetHexString(s string) error {
-	return pub.v.SetString(s, 16)
+	return pub.v.setString(s, 16)
 }
 
-// IsEqual --
+// IsEqual compares two BLS public keys.
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
-	return pub.v.IsEqual(&rhs.v)
+	return pub.v.isEqual(&rhs.v)
 }
 
-// Add --
+// Add two BLS public keys together
 func (pub *PublicKey) Add(rhs *PublicKey) {
-	G2Add(&pub.v, &pub.v, &rhs.v)
+	g2Add(&pub.v, &pub.v, &rhs.v)
 }
 
-// Sign  --
+// Sign represents a signature in the BLS signature aggregation scheme.
 type Sign struct {
-	v G1
+	v g1
 }
 
 // getPointer --
@@ -175,49 +180,49 @@ func (sign *Sign) getPointer() (p *C.blsSignature) {
 	return (*C.blsSignature)(unsafe.Pointer(sign))
 }
 
-// Serialize --
+// Serialize a signature into a byte array.
 func (sign *Sign) Serialize() []byte {
-	return sign.v.Serialize()
+	return sign.v.serialize()
 }
 
-// Deserialize --
+// Deserialize a signature from a byte array.
 func (sign *Sign) Deserialize(buf []byte) error {
-	return sign.v.Deserialize(buf)
+	return sign.v.deserialize(buf)
 }
 
-// SerializeToHexStr --
+// SerializeToHexStr serializes a signature into a hex string.
 func (sign *Sign) SerializeToHexStr() string {
-	return sign.v.GetString(IoSerializeHexStr)
+	return sign.v.getString(IoSerializeHexStr)
 }
 
-// DeserializeHexStr --
+// DeserializeHexStr creates a signature from a hex string serialization.
 func (sign *Sign) DeserializeHexStr(s string) error {
-	return sign.v.SetString(s, IoSerializeHexStr)
+	return sign.v.setString(s, IoSerializeHexStr)
 }
 
-// GetHexString --
-func (sign *Sign) GetHexString() string {
-	return sign.v.GetString(16)
+// HexString representation of a signature.
+func (sign *Sign) HexString() string {
+	return sign.v.getString(16)
 }
 
-// SetHexString --
+// SetHexString sets a signature from a hex string.
 func (sign *Sign) SetHexString(s string) error {
-	return sign.v.SetString(s, 16)
+	return sign.v.setString(s, 16)
 }
 
-// IsEqual --
+// IsEqual compares two signatures.
 func (sign *Sign) IsEqual(rhs *Sign) bool {
-	return sign.v.IsEqual(&rhs.v)
+	return sign.v.isEqual(&rhs.v)
 }
 
-// GetPublicKey --
+// GetPublicKey returns the public key corresponding to a BLS private key.
 func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 	pub = new(PublicKey)
 	C.blsGetPublicKey(pub.getPointer(), sec.getPointer())
 	return pub
 }
 
-// Sign -- Constant Time version
+// Sign a string message using a BLS private key in constant time.
 func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	sign = new(Sign)
 	buf := []byte(m)
@@ -226,12 +231,12 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	return sign
 }
 
-// Add --
+// Add two BLS signatures together.
 func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignatureAdd(sign.getPointer(), rhs.getPointer())
 }
 
-// Verify --
+// Verify a signature using a BLS public key and a message string.
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
 	// #nosec

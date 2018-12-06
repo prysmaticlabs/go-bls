@@ -13,7 +13,7 @@ go_library(
         "//:mcl-compiled-lib",
     ],
     cgo = True,
-    clinkopts = ["-lbls384_dy -lgmp -lstdc++"],
+    clinkopts = ["-lstdc++"],
     copts = ["-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL"],
     importpath = "github.com/prysmaticlabs/go-bls",
     visibility = ["//visibility:public"],
