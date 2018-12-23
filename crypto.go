@@ -2,7 +2,7 @@ package bls
 
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
-#include "mcl/include/mcl/bn.h"
+#include "external/herumi_mcl/include/mcl/bls.h"
 */
 import "C"
 import "fmt"

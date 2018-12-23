@@ -5,18 +5,30 @@ go_library(
     srcs = [
         "bls.go",
         "crypto.go",
-        "mcl/include/mcl/bls.h",
-        "mcl/include/mcl/bn.h", 
-        "mcl/include/mcl/curve_type.h",
     ],
     cdeps = [
-        "//:mcl-compiled-lib",
+        "go-lib",
     ],
     cgo = True,
     clinkopts = ["-lstdc++"],
     copts = ["-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL"],
     importpath = "github.com/prysmaticlabs/go-bls",
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "go-lib",
+    hdrs = [
+        "@herumi_mcl//:include/mcl/bls.h",
+        "@herumi_mcl//:include/mcl/bn.h",
+        "@herumi_mcl//:include/mcl/curve_type.h",
+    ],
+    includes = ["external/herumi_mcl/include/"],
+    deps = [
+        "@herumi_mcl//:mcl-lib",
+        "@bazelify_gmp//:gmp",
+        "@boringssl//:crypto",
+    ],
 )
 
 go_test(
