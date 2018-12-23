@@ -5,13 +5,9 @@ go_library(
     srcs = [
         "bls.go",
         "crypto.go",
-        "mcl/include/mcl/bls.h",
-        "mcl/include/mcl/bn.h",
-        "mcl/include/mcl/curve_type.h",
     ],
     cdeps = [
-        "//:mcl-compiled-lib",
-        "@bazelify_gmp//:gmp",
+      "go-lib"
     ],
     cgo = True,
     clinkopts = ["-lstdc++"],
