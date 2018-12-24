@@ -7,7 +7,7 @@ go_library(
         "crypto.go",
     ],
     cdeps = [
-      "go-lib"
+      "go-lib",
     ],
     cgo = True,
     clinkopts = ["-lstdc++"],
@@ -35,14 +35,4 @@ go_test(
     name = "go_default_test",
     srcs = ["bls_test.go"],
     embed = [":go_default_library"],
-)
-
-cc_library(
-  name = "mcl-compiled-lib",
-  srcs = [
-    "mcl/lib/libbls384.a",
-    "mcl/lib/libbls384_dy.so",
-  ],
-  includes = ["mcl/lib"],
-  visibility = ["//visibility:public"],
 )
