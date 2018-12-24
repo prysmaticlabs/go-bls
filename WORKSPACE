@@ -23,7 +23,7 @@ git_repository(
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
-    commit = "3819642a7f67cb6cd001edb862079238eb6d0a18",
+    commit = "98ccf38c714ccd5527abdb46c16095fa1f622070",
 )
 
 http_archive(

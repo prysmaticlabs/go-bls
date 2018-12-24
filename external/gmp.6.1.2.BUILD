@@ -1,21 +1,5 @@
 exports_files([
-    "assert.c",
-    "compat.c",
-    "errno.c",
-    "extract-dbl.c",
-    "gmp-impl.h",
-    "invalid.c",
-    "longlong.h",
-    "memory.c",
-    "mp_bpl.c",
-    "mp_clz_tab.c",
-    "mp_dv_tab.c",
-    "mp_get_fns.c",
-    "mp_minv_tab.c",
-    "mp_set_fns.c",
-    "nextprime.c",
-    "primesieve.c",
-    "version.c",
+    "gmpxx.h",
 ])
 
 ### Rules based on compiler/platform
@@ -504,6 +488,7 @@ cc_library(
         "gmp-mparam.h",
         "mp_bases.h",
         "longlong.h",
+        "gmp.h",
     ],
     copts = select({
         "Wno_unused_variable_linux": ["-Wno-unused-variable"],
