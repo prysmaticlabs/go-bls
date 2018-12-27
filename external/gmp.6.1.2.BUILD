@@ -30,6 +30,14 @@ config_setting(
 
 ################################################################################
 
+load("@io_bazel_rules_m4//:m4.bzl", "m4")
+
+m4(
+    name = "hdrs",
+    srcs = ["gmp-h.in"],
+    out = "dummy",
+)
+
 # Unable to get the new http_archive gets working unless the BUILD
 # file is under external/
 # Refer: https://stackoverflow.com/questions/51802681/does-bazel-need-external-repo-build-files-to-be-in-workspace-root-external
@@ -43,21 +51,9 @@ genrule(
         "gmp_limb_bits",
         "gmp_nail_bits",
     ],
-    ####
-    # Configure script creates *.asm and *.c files in mpn declare_directory.
-    #
-    # As we do not know the names of these files, it cannot be copied to
-    # output directory (since Bazel requires the names in "outs" beforehand).
-    # So we package all the *.asm and *.c files into a tar.gz, whose name is
-    # mentioned in "outs".
-    #
-    # Bazel do not support the "srcs" of a cc_library to be compressed file.
-    # Hence we use Tree Artifacts to hack the cc_library to compress and get
-    # them all compiled.
-    # Refer: https://stackoverflow.com/questions/48417712/how-to-build-static-library-from-the-generated-source-files-using-bazel-build
-    #
-    ####
     cmd = """
+        m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
+        PATH=$${PATH}:$${m4_PATH}
         cd external/gmp_6_1_2
         ./configure >/dev/null
         cat gmp.h | grep "#define GMP_LIMB_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_limb_bits
@@ -70,7 +66,9 @@ genrule(
         cp external/gmp_6_1_2/gmp_nail_bits $(location gmp_nail_bits)
         cp external/gmp_6_1_2/gmp-mparam.h $(location gmp-mparam.h)
     """,
+    local = 1,
     visibility = ["//visibility:public"],
+    tools = ["dummy"],
 )
 
 ### fac_table.h
@@ -318,20 +316,32 @@ genrule(
         "mp_bases.h",
         "perfsqr.h",
         "trialdivtab.h",
+        "gmp.h",
+        "config.h",
+        "gmp-mparam.h",
     ] + glob(["**/*"]),
     outs = ["mpn_generated.tar.gz", "libmpn_generated.a"],
     cmd = """
-        cp $(location fac_table.h) external/gmp_6_1_2
-        cp $(location fib_table.h) external/gmp_6_1_2
-        cp $(location jacobitab.h) external/gmp_6_1_2
-        cp $(location mp_bases.h) external/gmp_6_1_2
-        cp $(location perfsqr.h) external/gmp_6_1_2
-        cp $(location trialdivtab.h) external/gmp_6_1_2
+        cp $(location fac_table.h) external/gmp_6_1_2/mpn
+        cp $(location fib_table.h) external/gmp_6_1_2/mpn
+        cp $(location jacobitab.h) external/gmp_6_1_2/mpn
+        cp $(location mp_bases.h) external/gmp_6_1_2/mpn
+        cp $(location perfsqr.h) external/gmp_6_1_2/mpn
+        cp $(location trialdivtab.h) external/gmp_6_1_2/mpn
+        cp $(location gmp.h) external/gmp_6_1_2/mpn
+        cp $(location config.h) external/gmp_6_1_2/mpn
+        cp $(location gmp-mparam.h) external/gmp_6_1_2/mpn
+
+        m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
+        PATH=$${PATH}:$${m4_PATH}
 
         cd external/gmp_6_1_2
         ./configure >/dev/null
+        cp config.m4 mpn/
 
         cd mpn
+        cp config.m4 ../
+
         CCAS_=`grep "CCAS =" Makefile | cut -d'=' -f2`
         CPP_FLAGS_="-DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -I. -I.. "
         CPP_FLAGS_=$${CPP_FLAGS_}`grep "CFLAGS =" Makefile | sed 's/^[^=]*=//g'`
@@ -351,7 +361,9 @@ genrule(
         cp external/gmp_6_1_2/mpn/mpn_generated.tar.gz $(location mpn_generated.tar.gz)
         cp external/gmp_6_1_2/mpn/libmpn_generated.a $(location libmpn_generated.a)
     """,
+    local = 1,
     visibility = ["//visibility:public"],
+    tools = ["dummy"],
 )
 
 cc_library(
