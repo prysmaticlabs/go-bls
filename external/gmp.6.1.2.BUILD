@@ -354,7 +354,7 @@ genrule(
             prefix=$${file%.*}
             $${CCAS_} -DOPERATION_$${prefix} $${CPP_FLAGS_} -Wa,--noexecstack $${file} -fPIC -DPIC -o $${prefix}.o
         done
-        $(AR) cq libmpn_generated.a *.o
+        ar cq libmpn_generated.a *.o
         tar -czf mpn_generated.tar.gz *.o
         cp mpn_generated.tar.gz /tmp
         cd ../../..
