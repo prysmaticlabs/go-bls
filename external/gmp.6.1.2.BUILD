@@ -322,16 +322,7 @@ genrule(
     ] + glob(["**/*"]),
     outs = ["mpn_generated.tar.gz", "libmpn_generated.a"],
     cmd = """
-        cp $(location fac_table.h) external/gmp_6_1_2/mpn
-        cp $(location fib_table.h) external/gmp_6_1_2/mpn
-        cp $(location jacobitab.h) external/gmp_6_1_2/mpn
-        cp $(location mp_bases.h) external/gmp_6_1_2/mpn
-        cp $(location perfsqr.h) external/gmp_6_1_2/mpn
-        cp $(location trialdivtab.h) external/gmp_6_1_2/mpn
-        cp $(location gmp.h) external/gmp_6_1_2/mpn
-        cp $(location config.h) external/gmp_6_1_2/mpn
-        cp $(location gmp-mparam.h) external/gmp_6_1_2/mpn
-
+        hdrs_path=`pwd`"/"`dirname $(location fib_table.h)`
         m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
         PATH=$${PATH}:$${m4_PATH}
 
@@ -343,7 +334,7 @@ genrule(
         cp config.m4 ../
 
         CCAS_=`grep "CCAS =" Makefile | cut -d'=' -f2`
-        CPP_FLAGS_="-DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -I. -I.. "
+        CPP_FLAGS_="-DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -I. -I.. -I$${hdrs_path}"
         CPP_FLAGS_=$${CPP_FLAGS_}`grep "CFLAGS =" Makefile | sed 's/^[^=]*=//g'`
         for file in *.asm; do
             prefix=$${file%.*}
