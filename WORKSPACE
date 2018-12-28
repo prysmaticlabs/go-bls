@@ -17,13 +17,13 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "herumi_mcl",
     remote = "https://github.com/prysmaticlabs/mcl",
-    commit ="9355e1d3cef12321fb1002f5707a3655bed7c361",
+    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
 )
 
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
-    commit = "3819642a7f67cb6cd001edb862079238eb6d0a18",
+    commit = "98ccf38c714ccd5527abdb46c16095fa1f622070",
 )
 
 http_archive(
@@ -39,3 +39,13 @@ git_repository(
     commit = "fafc4482e85c09e7af5f71b2eb287b73ccd1020a",
     remote = "https://github.com/google/boringssl",
 )
+
+git_repository(
+    name = "io_bazel_rules_m4",
+    remote = "https://github.com/jmillikin/rules_m4",
+    commit = "2bf69df77dfb6b3ba6b7fc95c304b0dc279375bc",
+)
+
+load("@io_bazel_rules_m4//:m4.bzl", "m4_register_toolchains")
+
+m4_register_toolchains()
