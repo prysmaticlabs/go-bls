@@ -43,28 +43,47 @@ m4(
 # Refer: https://stackoverflow.com/questions/51802681/does-bazel-need-external-repo-build-files-to-be-in-workspace-root-external
 genrule(
     name = "gmp_hdrs",
-    srcs = glob(["**/*"]),
+    srcs = glob(["external/gmp_6_1_2/configure"]),
     outs = [
         "config.h",
         "gmp.h",
         "gmp-mparam.h",
         "gmp_limb_bits",
         "gmp_nail_bits",
+        "config.m4",
+        "ccas",
+        "cpp_flags",
+        "mpn_srcs.tar.gz",
     ],
     cmd = """
-        m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
-        PATH=$${PATH}:$${m4_PATH}
-        cd external/gmp_6_1_2
-        [ -f gmp.h ] || ./configure >/dev/null
-        cat gmp.h | grep "#define GMP_LIMB_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_limb_bits
-        cat gmp.h | grep "#define GMP_NAIL_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_nail_bits
+        if [ ! -f $(location gmp.h) ]; then
+          m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
+          PATH=$${PATH}:$${m4_PATH}
+          cd external/gmp_6_1_2
+          ./configure >/dev/null
+          cat gmp.h | grep "#define GMP_LIMB_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_limb_bits
+          cat gmp.h | grep "#define GMP_NAIL_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_nail_bits
 
-        cd ../..
-        cp external/gmp_6_1_2/config.h $(location config.h)
-        cp external/gmp_6_1_2/gmp.h $(location gmp.h)
-        cp external/gmp_6_1_2/gmp_limb_bits $(location gmp_limb_bits)
-        cp external/gmp_6_1_2/gmp_nail_bits $(location gmp_nail_bits)
-        cp external/gmp_6_1_2/gmp-mparam.h $(location gmp-mparam.h)
+          grep "CCAS =" Makefile | cut -d'=' -f2 > ccas
+          hdrs_path=`pwd`"/"`dirname $(location gmp.h)`
+          CPP_FLAGS_="-DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -I. -I.. -I$${hdrs_path}"
+          CPP_FLAGS_=$${CPP_FLAGS_}`grep "CFLAGS =" Makefile | sed 's/^[^=]*=//g'`
+          echo $${CPP_FLAGS_} > cpp_flags
+
+          cd mpn
+          tar -czf mpn_srcs.tar.gz *.asm *.c
+
+          cd ../../..
+          cp external/gmp_6_1_2/config.h $(location config.h)
+          cp external/gmp_6_1_2/gmp.h $(location gmp.h)
+          cp external/gmp_6_1_2/gmp_limb_bits $(location gmp_limb_bits)
+          cp external/gmp_6_1_2/gmp_nail_bits $(location gmp_nail_bits)
+          cp external/gmp_6_1_2/gmp-mparam.h $(location gmp-mparam.h)
+          cp external/gmp_6_1_2/config.m4 $(location config.m4)
+          cp external/gmp_6_1_2/ccas $(location ccas)
+          cp external/gmp_6_1_2/cpp_flags $(location cpp_flags)
+          cp external/gmp_6_1_2/mpn/mpn_srcs.tar.gz $(location mpn_srcs.tar.gz)
+        fi
     """,
     local = 1,
     visibility = ["//visibility:public"],
@@ -319,38 +338,42 @@ genrule(
         "gmp.h",
         "config.h",
         "gmp-mparam.h",
-    ] + glob(["**/*"]),
+        "config.m4",
+        "ccas",
+        "cpp_flags",
+        "mpn_srcs.tar.gz",
+    ],
     outs = ["mpn_generated.tar.gz", "libmpn_generated.a"],
     cmd = """
-        hdrs_path=`pwd`"/"`dirname $(location fib_table.h)`
-        m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
-        PATH=$${PATH}:$${m4_PATH}
+        if [ ! -f $(location mpn_generated.tar.gz) ]; then
+          m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
+          PATH=$${PATH}:$${m4_PATH}
 
-        cd external/gmp_6_1_2
-        [ -f gmp.h ] || ./configure >/dev/null
-        cp config.m4 mpn/
+          CCAS_=`cat $(location ccas)`
+          CPP_FLAGS_=`cat $(location cpp_flags)`
+          config_path=`pwd`"/"`dirname $(location config.m4)`
+          mpn_srcs_path=`pwd`"/"$(location mpn_srcs.tar.gz)
 
-        cd mpn
-        cp config.m4 ../
+          cd external/gmp_6_1_2/mpn
+          tar xzf $${mpn_srcs_path}
+          ln -s $${config_path}/config.m4 ../config.m4
 
-        CCAS_=`grep "CCAS =" Makefile | cut -d'=' -f2`
-        CPP_FLAGS_="-DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -I. -I.. -I$${hdrs_path}"
-        CPP_FLAGS_=$${CPP_FLAGS_}`grep "CFLAGS =" Makefile | sed 's/^[^=]*=//g'`
-        for file in *.asm; do
-            prefix=$${file%.*}
-            m4 -DOPERATION_$${prefix} -DPIC -I.. $${file} > tmp-$${prefix}.s
-            $${CCAS_} -DOPERATION_$${prefix} $${CPP_FLAGS_} -Wa,--noexecstack tmp-$${prefix}.s -fPIC -DPIC -o $${prefix}.o
-        done
-        for file in *.c; do
-            prefix=$${file%.*}
-            $${CCAS_} -DOPERATION_$${prefix} $${CPP_FLAGS_} -Wa,--noexecstack $${file} -fPIC -DPIC -o $${prefix}.o
-        done
-        ar cq libmpn_generated.a *.o
-        tar -czf mpn_generated.tar.gz *.o
-        cp mpn_generated.tar.gz /tmp
-        cd ../../..
-        cp external/gmp_6_1_2/mpn/mpn_generated.tar.gz $(location mpn_generated.tar.gz)
-        cp external/gmp_6_1_2/mpn/libmpn_generated.a $(location libmpn_generated.a)
+          for file in *.asm; do
+              prefix=$${file%.*}
+              m4 -DOPERATION_$${prefix} -DPIC -I.. $${file} > tmp-$${prefix}.s
+              $${CCAS_} -DOPERATION_$${prefix} $${CPP_FLAGS_} -Wa,--noexecstack tmp-$${prefix}.s -fPIC -DPIC -o $${prefix}.o
+          done
+          for file in *.c; do
+              prefix=$${file%.*}
+              $${CCAS_} -DOPERATION_$${prefix} $${CPP_FLAGS_} -I$${config_path} -Wa,--noexecstack $${file} -fPIC -DPIC -o $${prefix}.o
+          done
+          ar cq libmpn_generated.a *.o
+          tar -czf mpn_generated.tar.gz *.o
+          cp mpn_generated.tar.gz /tmp
+          cd ../../..
+          cp external/gmp_6_1_2/mpn/mpn_generated.tar.gz $(location mpn_generated.tar.gz)
+          cp external/gmp_6_1_2/mpn/libmpn_generated.a $(location libmpn_generated.a)
+        fi
     """,
     local = 1,
     visibility = ["//visibility:public"],
