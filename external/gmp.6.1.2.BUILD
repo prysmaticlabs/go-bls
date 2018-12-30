@@ -55,7 +55,7 @@ genrule(
         m4_PATH=`pwd`"/bazel-out/host/bin/external/m4_v1.4.18/bin"
         PATH=$${PATH}:$${m4_PATH}
         cd external/gmp_6_1_2
-        ./configure >/dev/null
+        [ -f gmp.h ] || ./configure >/dev/null
         cat gmp.h | grep "#define GMP_LIMB_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_limb_bits
         cat gmp.h | grep "#define GMP_NAIL_BITS" | tr -s [:blank:] | cut -f3 -d' ' > gmp_nail_bits
 
@@ -327,7 +327,7 @@ genrule(
         PATH=$${PATH}:$${m4_PATH}
 
         cd external/gmp_6_1_2
-        ./configure >/dev/null
+        [ -f gmp.h ] || ./configure >/dev/null
         cp config.m4 mpn/
 
         cd mpn
