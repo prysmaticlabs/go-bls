@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	m := "super special message"
+	m := []byte("super special message")
 	var aggSig *bls.Sign
 	var aggPub *bls.PublicKey
 	startTime := time.Now()

@@ -15,7 +15,7 @@ func main() {
 	var sec bls.SecretKey
 	sec.SetByCSPRNG()
 	pub := sec.GetPublicKey()
-	m := "super special message"
+	m := []byte("super special message")
 
 	sig := sec.Sign(m)
 	log.Printf("Signature: 0x%x", sig.HexString())
