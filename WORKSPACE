@@ -23,6 +23,7 @@ git_repository(
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
+<<<<<<< HEAD
     commit = "3819642a7f67cb6cd001edb862079238eb6d0a18",
 )
 
@@ -32,6 +33,9 @@ http_archive(
     sha256 = "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
     strip_prefix = "gmp-6.1.2",
     url = "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz",
+=======
+    commit = "d5c10aea1c593f17fe118dbb25623ec6c372cdd3",
+>>>>>>> ca1878c... use the bew bazelify_gmp
 )
 
 git_repository(
