@@ -15,7 +15,7 @@ func main() {
 	pub1 := sec1.GetPublicKey()
 	pub2 := sec2.GetPublicKey()
 
-	m := "super special message"
+	m := []byte("super special message")
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
