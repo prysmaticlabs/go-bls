@@ -21,11 +21,10 @@ local_repository(
 #    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
 )
 
-local_repository(
+git_repository(
     name = "bazelify_gmp",
-    path = "../bazelify-gmp",
-#    remote = "https://github.com/robin-thomas/bazelify-gmp",
-#    commit = "519a5b41c27bc5003a94116ed1b7d05ce732a331",
+    remote = "https://github.com/robin-thomas/bazelify-gmp",
+    commit = "d15bbe8235251c4e1d5431b8aa0fee13a484e5d7",
 )
 
 git_repository(
