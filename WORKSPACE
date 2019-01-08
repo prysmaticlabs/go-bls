@@ -14,38 +14,16 @@ go_register_toolchains()
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-local_repository(
+git_repository(
     name = "herumi_mcl",
-<<<<<<< HEAD
     remote = "https://github.com/prysmaticlabs/mcl",
-    commit ="9355e1d3cef12321fb1002f5707a3655bed7c361",
-=======
-    path = "../mcl",
-#    remote = "https://github.com/prysmaticlabs/mcl",
-#    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
->>>>>>> a2e86af... use latest bazelify_GMP
+    commit = "79b3a33e21072712f00985ed2adf34b3bcf0d74e",
 )
 
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
-<<<<<<< HEAD
-<<<<<<< HEAD
-    commit = "3819642a7f67cb6cd001edb862079238eb6d0a18",
-)
-
-http_archive(
-    name = "gmp_6_1_2",
-    build_file = "gmp.6.1.2.BUILD",
-    sha256 = "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
-    strip_prefix = "gmp-6.1.2",
-    url = "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz",
-=======
-    commit = "d5c10aea1c593f17fe118dbb25623ec6c372cdd3",
->>>>>>> ca1878c... use the bew bazelify_gmp
-=======
-    commit = "519a5b41c27bc5003a94116ed1b7d05ce732a331",
->>>>>>> a2e86af... use latest bazelify_GMP
+    commit = "bb4881b35e6864c90493980d035e1d984cafd093",
 )
 
 git_repository(
@@ -53,3 +31,13 @@ git_repository(
     commit = "fafc4482e85c09e7af5f71b2eb287b73ccd1020a",
     remote = "https://github.com/google/boringssl",
 )
+
+git_repository(
+    name = "io_bazel_rules_m4",
+    remote = "https://github.com/jmillikin/rules_m4",
+    commit = "2bf69df77dfb6b3ba6b7fc95c304b0dc279375bc",
+)
+
+load("@io_bazel_rules_m4//:m4.bzl", "m4_register_toolchains")
+
+m4_register_toolchains()
