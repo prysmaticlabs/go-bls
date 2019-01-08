@@ -14,16 +14,17 @@ go_register_toolchains()
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-git_repository(
+local_repository(
     name = "herumi_mcl",
-    remote = "https://github.com/prysmaticlabs/mcl",
-    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
+    path = "../mcl",
+#    remote = "https://github.com/prysmaticlabs/mcl",
+#    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
 )
 
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
-    commit = "d5c10aea1c593f17fe118dbb25623ec6c372cdd3",
+    commit = "519a5b41c27bc5003a94116ed1b7d05ce732a331",
 )
 
 git_repository(
