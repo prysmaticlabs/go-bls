@@ -17,21 +17,13 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "herumi_mcl",
     remote = "https://github.com/prysmaticlabs/mcl",
-    commit ="b90f1fbfea78c47012fcbc9243a616e654794421",
+    commit = "79b3a33e21072712f00985ed2adf34b3bcf0d74e",
 )
 
 git_repository(
     name = "bazelify_gmp",
     remote = "https://github.com/robin-thomas/bazelify-gmp",
-    commit = "98ccf38c714ccd5527abdb46c16095fa1f622070",
-)
-
-http_archive(
-    name = "gmp_6_1_2",
-    build_file = "gmp.6.1.2.BUILD",
-    sha256 = "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
-    strip_prefix = "gmp-6.1.2",
-    url = "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz",
+    commit = "bb4881b35e6864c90493980d035e1d984cafd093",
 )
 
 git_repository(
