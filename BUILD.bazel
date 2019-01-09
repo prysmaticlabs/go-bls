@@ -5,13 +5,9 @@ go_library(
     srcs = [
         "bls.go",
         "crypto.go",
-        "mcl/include/mcl/bls.h",
-        "mcl/include/mcl/bn.h",
-        "mcl/include/mcl/curve_type.h",
     ],
     cdeps = [
-        "//:mcl-compiled-lib",
-        "@bazelify_gmp//:gmp",
+      "go-lib",
     ],
     cgo = True,
     clinkopts = ["-lstdc++"],
@@ -39,14 +35,4 @@ go_test(
     name = "go_default_test",
     srcs = ["bls_test.go"],
     embed = [":go_default_library"],
-)
-
-cc_library(
-  name = "mcl-compiled-lib",
-  srcs = [
-    "mcl/lib/libbls384.a",
-    "mcl/lib/libbls384_dy.so",
-  ],
-  includes = ["mcl/lib"],
-  visibility = ["//visibility:public"],
 )
