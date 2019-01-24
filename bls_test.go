@@ -1,7 +1,10 @@
 package bls
 
-import "testing"
-import "strconv"
+import (
+	"bytes"
+	"strconv"
+	"testing"
+)
 
 var unitN = 0
 
@@ -122,6 +125,35 @@ func testAdd(t *testing.T) {
 	}
 }
 
+func testSetValue(t *testing.T) {
+	var sec1 SecretKey
+	var sec2 SecretKey
+
+	sec1.SetValue(1000)
+	sec2.SetValue(1000)
+
+	pub1 := sec1.GetPublicKey()
+	pub2 := sec1.GetPublicKey()
+
+	m := []byte("test test")
+	sign1 := sec1.Sign(m)
+	sign2 := sec2.Sign(m)
+
+	if !sign1.Verify(pub2, m) {
+		t.Errorf("the two secret keys derived different signatures," +
+			" when they are supposed to be the same")
+	}
+
+	if !sign2.Verify(pub1, m) {
+		t.Errorf("the two secret keys derived different signatures," +
+			" when they are supposed to be the same")
+	}
+
+	if !bytes.Equal(sec1.LittleEndian(), sec2.LittleEndian()) {
+		t.Errorf("two supposedly identical secret keys are not equal %v , %v", sec1.LittleEndian(), sec2.LittleEndian())
+	}
+}
+
 func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
@@ -229,6 +261,7 @@ func test(t *testing.T, c int) {
 	t.Logf("unitN=%d\n", unitN)
 	testPre(t)
 	testAdd(t)
+	testSetValue(t)
 	testSign(t)
 	testData(t)
 	testStringConversion(t)

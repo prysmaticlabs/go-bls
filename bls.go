@@ -85,6 +85,12 @@ func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
 	return sec.v.isEqual(&rhs.v)
 }
 
+// SetValue sets a private key's internal representation using an
+// inputted number.
+func (sec *SecretKey) SetValue(val int64) {
+	sec.v.setInt64(val)
+}
+
 // SetByCSPRNG sets a private key's internal representation using a
 // cryptographically-secure, pseudorandom number generator.
 func (sec *SecretKey) SetByCSPRNG() {
