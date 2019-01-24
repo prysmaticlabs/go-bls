@@ -3,7 +3,7 @@ package bls
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL -I ${SRCDIR}/mcl/include/mcl -I ${SRCDIR}/mcl/lib
 #cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lstdc++
-#include "external/herumi_mcl/include/mcl/bls.h"
+#include "include/mcl/bls.h"
 */
 import "C"
 import "fmt"
