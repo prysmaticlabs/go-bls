@@ -1,14 +1,17 @@
 package bls
 
-import "testing"
-import "strconv"
+import (
+	"bytes"
+	"strconv"
+	"testing"
+)
 
 var unitN = 0
 
 // Tests (for Benchmarks see below)
 func testPre(t *testing.T) {
 	t.Log("create secret key")
-	m := "this is a bls sample for go"
+	m := []byte("this is a bls sample for go")
 	var sec SecretKey
 	sec.SetByCSPRNG()
 	t.Log("sec:", sec.HexString())
@@ -58,7 +61,7 @@ func testStringConversion(t *testing.T) {
 	}
 }
 
-func testEachSign(t *testing.T, m string) ([]SecretKey, []PublicKey, []Sign) {
+func testEachSign(t *testing.T, m []byte) ([]SecretKey, []PublicKey, []Sign) {
 	n := 5
 	secVec := make([]SecretKey, n)
 	pubVec := make([]PublicKey, n)
@@ -86,7 +89,7 @@ func testEachSign(t *testing.T, m string) ([]SecretKey, []PublicKey, []Sign) {
 }
 
 func testSign(t *testing.T) {
-	m := "testSign"
+	m := []byte("testSign")
 	t.Log(m)
 
 	var sec0 SecretKey
@@ -109,7 +112,7 @@ func testAdd(t *testing.T) {
 	pub1 := sec1.GetPublicKey()
 	pub2 := sec2.GetPublicKey()
 
-	m := "test test"
+	m := []byte("test test")
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
@@ -119,6 +122,35 @@ func testAdd(t *testing.T) {
 	pub1.Add(pub2)
 	if !sign1.Verify(pub1, m) {
 		t.Fail()
+	}
+}
+
+func testSetValue(t *testing.T) {
+	var sec1 SecretKey
+	var sec2 SecretKey
+
+	sec1.SetValue(1000)
+	sec2.SetValue(1000)
+
+	pub1 := sec1.GetPublicKey()
+	pub2 := sec1.GetPublicKey()
+
+	m := []byte("test test")
+	sign1 := sec1.Sign(m)
+	sign2 := sec2.Sign(m)
+
+	if !sign1.Verify(pub2, m) {
+		t.Errorf("the two secret keys derived different signatures," +
+			" when they are supposed to be the same")
+	}
+
+	if !sign2.Verify(pub1, m) {
+		t.Errorf("the two secret keys derived different signatures," +
+			" when they are supposed to be the same")
+	}
+
+	if !bytes.Equal(sec1.LittleEndian(), sec2.LittleEndian()) {
+		t.Errorf("two supposedly identical secret keys are not equal %v , %v", sec1.LittleEndian(), sec2.LittleEndian())
 	}
 }
 
@@ -144,7 +176,7 @@ func testData(t *testing.T) {
 	if !pub1.IsEqual(&pub2) {
 		t.Error("PublicKey not same")
 	}
-	m := "doremi"
+	m := []byte("doremi")
 	sign1 := sec1.Sign(m)
 	b = sign1.Serialize()
 	var sign2 Sign
@@ -179,7 +211,7 @@ func testSerializeToHexStr(t *testing.T) {
 	if !pub1.IsEqual(&pub2) {
 		t.Error("PublicKey not same")
 	}
-	m := "doremi"
+	m := []byte("doremi")
 	sign1 := sec1.Sign(m)
 	s = sign1.SerializeToHexStr()
 	var sign2 Sign
@@ -229,6 +261,7 @@ func test(t *testing.T, c int) {
 	t.Logf("unitN=%d\n", unitN)
 	testPre(t)
 	testAdd(t)
+	testSetValue(t)
 	testSign(t)
 	testData(t)
 	testStringConversion(t)
@@ -279,7 +312,7 @@ func BenchmarkSigning(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		sec.SetByCSPRNG()
 		b.StartTimer()
-		sec.Sign(strconv.Itoa(n))
+		sec.Sign([]byte(strconv.Itoa(n)))
 		b.StopTimer()
 	}
 }
@@ -294,7 +327,7 @@ func BenchmarkValidation(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		sec.SetByCSPRNG()
 		pub := sec.GetPublicKey()
-		m := strconv.Itoa(n)
+		m := []byte(strconv.Itoa(n))
 		sig := sec.Sign(m)
 		b.StartTimer()
 		sig.Verify(pub, m)

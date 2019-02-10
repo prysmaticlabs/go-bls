@@ -3,7 +3,7 @@ package bls
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL -I ${SRCDIR}/mcl/include/mcl -I ${SRCDIR}/mcl/lib
 #cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lstdc++
-#include "external/herumi_mcl/include/mcl/bls.h"
+#include "include/mcl/bls.h"
 */
 import "C"
 import "fmt"
@@ -83,6 +83,12 @@ func (sec *SecretKey) SetDecString(s string) error {
 // IsEqual compares two private keys.
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
 	return sec.v.isEqual(&rhs.v)
+}
+
+// SetValue sets a private key's internal representation using an
+// inputted number.
+func (sec *SecretKey) SetValue(val int64) {
+	sec.v.setInt64(val)
 }
 
 // SetByCSPRNG sets a private key's internal representation using a
@@ -223,11 +229,10 @@ func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 }
 
 // Sign a string message using a BLS private key in constant time.
-func (sec *SecretKey) Sign(m string) (sign *Sign) {
+func (sec *SecretKey) Sign(m []byte) (sign *Sign) {
 	sign = new(Sign)
-	buf := []byte(m)
 	// #nosec
-	C.blsSign(sign.getPointer(), sec.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	C.blsSign(sign.getPointer(), sec.getPointer(), unsafe.Pointer(&m[0]), C.size_t(len(m)))
 	return sign
 }
 
@@ -237,8 +242,7 @@ func (sign *Sign) Add(rhs *Sign) {
 }
 
 // Verify a signature using a BLS public key and a message string.
-func (sign *Sign) Verify(pub *PublicKey, m string) bool {
-	buf := []byte(m)
+func (sign *Sign) Verify(pub *PublicKey, m []byte) bool {
 	// #nosec
-	return C.blsVerify(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf))) == 1
+	return C.blsVerify(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&m[0]), C.size_t(len(m))) == 1
 }
