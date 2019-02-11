@@ -21,7 +21,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "herumi_mcl",
     remote = "https://github.com/prysmaticlabs/mcl",
-    commit = "e02b4b6d82bac7898a1963d20c27a9d9db30a6fe",
+    commit = "79b3a33e21072712f00985ed2adf34b3bcf0d74e",
 )
 
 git_repository(
