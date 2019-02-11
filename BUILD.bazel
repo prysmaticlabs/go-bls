@@ -1,4 +1,10 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/prysmaticlabs/go-bls
+gazelle(name = "gazelle")
+
+# gazelle:exclude bls.c
 
 go_library(
     name = "go_default_library",
@@ -7,14 +13,14 @@ go_library(
         "crypto.go",
     ],
     cdeps = [
-      "go-lib",
+        "go-lib",
     ],
     cgo = True,
-    clinkopts = ["-lstdc++"],
-    copts = ["-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL"],
+    clinkopts = ["-lstdc++"],  # keep
+    copts = ["-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL"],  # keep
     importpath = "github.com/prysmaticlabs/go-bls",
     visibility = ["//visibility:public"],
-    x_defs = { "bazel": "true" },
+    x_defs = {"bazel": "true"},
 )
 
 cc_library(

@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "github.com/prysmaticlabs/go-bls/example/aggregate-verify",
+    visibility = ["//visibility:private"],
+    deps = ["//:go_default_library"],
+)
+
+go_binary(
+    name = "aggregate-verify",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

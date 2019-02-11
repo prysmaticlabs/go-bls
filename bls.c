@@ -8,9 +8,9 @@ void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs){}
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size){ return 0; }
 void mclBnFr_add(mclBnFr *z, const mclBnFr *x, const mclBnFr *y){}
 void mclBnFr_clear(mclBnFr *x){}
-mclSize mclBnFr_deserialize(mclBnFr *x, const void *buf, mclSize bufSize){}
+mclSize mclBnFr_deserialize(mclBnFr *x, const void *buf, mclSize bufSize){ return 0; }
 void mclBnFr_div(mclBnFr *z, const mclBnFr *x, const mclBnFr *y){}
-mclSize mclBnFr_getStr(char *buf, mclSize maxBufSize, const mclBnFr *x, int ioMode){}
+mclSize mclBnFr_getStr(char *buf, mclSize maxBufSize, const mclBnFr *x, int ioMode){ return 0; }
 int mclBnFr_setStr(mclBnFr *x, const char *buf, mclSize bufSize, int ioMode){ return 0; }
 void mclBnFr_inv(mclBnFr *y, const mclBnFr *x){}
 int mclBnFr_isEqual(const mclBnFr *x, const mclBnFr *y){ return 0; }
