@@ -120,4 +120,3 @@ void mclBn_pairing(mclBnGT *z, const mclBnG1 *x, const mclBnG2 *y);
 void mclBn_precomputeG2(uint64_t *Qbuf, const mclBnG2 *Q);
 void mclBn_precomputedMillerLoop(mclBnGT *f, const mclBnG1 *P, const uint64_t *Qbuf);
 void mclBn_precomputedMillerLoop2(mclBnGT *f, const mclBnG1 *P1, const uint64_t *Q1buf, const mclBnG1 *P2, const uint64_t *Q2buf);
-//void mclBn_precomputedMillerLoop2();
