@@ -1,8 +1,6 @@
 package bls
 
 /*
-#cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCL_DONT_USE_OPENSSL -I ${SRCDIR}/mcl/include/mcl -I ${SRCDIR}/mcl/lib
-#cgo LDFLAGS:-L${SRCDIR}/mcl/lib -lbls384_dy -lstdc++
 #include "include/mcl/bls.h"
 */
 import "C"
@@ -10,7 +8,12 @@ import "fmt"
 import "unsafe"
 import "log"
 
+var bazel = "no"
+
 func init() {
+	if bazel != "true" {
+		panic("this library must be built by bazel, but was not")
+	}
 	if err := initializeBLS(BLS12_381); err != nil {
 		log.Fatalf("Could not initialize BLS12-381 curve: %v", err)
 	}
