@@ -1,241 +1,123 @@
-// THIS FILE IS NOT USED BY BAZEL -- IT EXISTS SO THAT GO TOOLS CAN RUN STATIC
-// ANALYSIS AND LINTING IN DEPENDENT PROJECTS.
-#pragma once
-/**
-	@file
-	@brief C interface of bls.hpp
-	@author MITSUNARI Shigeo(@herumi)
-	@license modified new BSD license
-	http://opensource.org/licenses/BSD-3-Clause
-*/
-#include "bn.h"
+#include <stdint.h> // for uint64_, uint8_t
+#include <stdlib.h> // for size_t
 
-#ifdef _MSC_VER
-	#ifdef BLS_DONT_EXPORT
-		#define BLS_DLL_API
-	#else
-		#ifdef BLS_DLL_EXPORT
-			#define BLS_DLL_API __declspec(dllexport)
-		#else
-			#define BLS_DLL_API __declspec(dllimport)
-		#endif
-	#endif
-	#ifndef BLS_NO_AUTOLINK
-		#if MCLBN_FP_UNIT_SIZE == 4
-			#pragma comment(lib, "bls256.lib")
-		#elif MCLBN_FP_UNIT_SIZE == 6
-			#pragma comment(lib, "bls384.lib")
-		#endif
-	#endif
-#elif defined(__EMSCRIPTEN__) && !defined(BLS_DONT_EXPORT)
-	#define BLS_DLL_API __attribute__((used))
-#elif defined(__wasm__) && !defined(BLS_DONT_EXPORT)
-	#define BLS_DLL_API __attribute__((visibility("default")))
-#else
-	#define BLS_DLL_API
-#endif
+#define MCLBN_COMPILED_TIME_VAR 0
+#define MCLBN_IO_SERIALIZE_HEX_STR 0
+#define mclSize size_t
+#define mclInt int64_t
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum {
+  MCL_BN254 = 0,
+  MCL_BN381_1 = 1,
+  MCL_BN381_2 = 2,
+  MCL_BN462 = 3,
+  MCL_BN_SNARK1 = 4,
+  MCL_BLS12_381 = 5,
+  MCL_BN160 = 6
+};
+
+enum {
+  mclBn_CurveFp254BNb = 0,
+  mclBn_CurveFp382_1 = 1,
+  mclBn_CurveFp382_2 = 2,
+  mclBn_CurveFp462 = 3,
+  mclBn_CurveSNARK1 = 4,
+  mclBls12_CurveFp381 = 5
+};
 
 typedef struct {
-	mclBnFr v;
-} blsId;
-
-typedef struct {
-	mclBnFr v;
-} blsSecretKey;
-
-typedef struct {
-	mclBnG2 v;
 } blsPublicKey;
-
 typedef struct {
-	mclBnG1 v;
+} blsSecretKey;
+typedef struct {
 } blsSignature;
+typedef struct {
+} mclBnFr;
 
-/*
-	initialize this library
-	call this once before using the other functions
-	@param curve [in] enum value defined in mcl/bn.h
-	@param compiledTimeVar [in] specify MCLBN_COMPILED_TIME_VAR,
-	which macro is used to make sure that the values
-	are the same when the library is built and used
-	@return 0 if success
-	@note blsInit() is thread safe and serialized if it is called simultaneously
-	but don't call it while using other functions.
-*/
-BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
-
-BLS_DLL_API void blsIdSetInt(blsId *id, int x);
-
-// return 0 if success
-// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
-BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize);
-
-BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
-
-// calculate the has of m and sign the hash
-BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
-
-// return 1 if valid
-BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
-
-// return written byte size if success else 0
-BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
-BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API mclSize blsPublicKeySerialize(void *buf, mclSize maxBufSize, const blsPublicKey *pub);
-BLS_DLL_API mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature *sig);
-
-// return read byte size if success else 0
-BLS_DLL_API mclSize blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize);
-BLS_DLL_API mclSize blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize);
-BLS_DLL_API mclSize blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize);
-BLS_DLL_API mclSize blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize);
-
-// return 1 if same else 0
-BLS_DLL_API int blsIdIsEqual(const blsId *lhs, const blsId *rhs);
-BLS_DLL_API int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs);
-BLS_DLL_API int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs);
-BLS_DLL_API int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs);
-
-// return 0 if success
-BLS_DLL_API int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id);
-BLS_DLL_API int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, mclSize k, const blsId *id);
-
-BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, mclSize n);
-BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, mclSize n);
-BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n);
-
-// add
-BLS_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
-BLS_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
-BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
-
-/*
-	verify whether a point of an elliptic curve has order r
-	This api affetcs setStr(), deserialize() for G2 on BN or G1/G2 on BLS12
-	@param doVerify [in] does not verify if zero(default 1)
-	Signature = G1, PublicKey = G2
-*/
-BLS_DLL_API void blsSignatureVerifyOrder(int doVerify);
-BLS_DLL_API void blsPublicKeyVerifyOrder(int doVerify);
-//	deserialize under VerifyOrder(true) = deserialize under VerifyOrder(false) + IsValidOrder
-BLS_DLL_API int blsSignatureIsValidOrder(const blsSignature *sig);
-BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
-
-#ifndef BLS_MINIMUM_API
-
-/*
-	sign the hash
-	use the low (bitSize of r) - 1 bit of h
-	return 0 if success else -1
-	NOTE : return false if h is zero or c1 or -c1 value for BN254. see hashTest() in test/bls_test.hpp
-*/
-BLS_DLL_API int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size);
-// return 1 if valid
-BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
-
-/*
-	verify aggSig with pubVec[0, n) and hVec[0, n)
-	e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
-	return 1 if valid
-	@note do not check duplication of hVec
-*/
-BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n);
-
-// sub
-BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);
-BLS_DLL_API void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs);
-BLS_DLL_API void blsSignatureSub(blsSignature *sig, const blsSignature *rhs);
-
-// not thread safe version (old blsInit)
-BLS_DLL_API int blsInitNotThreadSafe(int curve, int compiledTimeVar);
-
-BLS_DLL_API mclSize blsGetOpUnitSize(void);
-// return strlen(buf) if success else 0
-BLS_DLL_API int blsGetCurveOrder(char *buf, mclSize maxBufSize);
-BLS_DLL_API int blsGetFieldOrder(char *buf, mclSize maxBufSize);
-
-// return bytes for serialized G1(=Fp)
-BLS_DLL_API int blsGetG1ByteSize(void);
-
-// return bytes for serialized Fr
-BLS_DLL_API int blsGetFrByteSize(void);
-
-// get a generator of G2
-BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
-
-// return 0 if success
-BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);
-BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize);
-
-/*
-	return strlen(buf) if success else 0
-	buf is '\0' terminated
-*/
-BLS_DLL_API mclSize blsIdGetDecStr(char *buf, mclSize maxBufSize, const blsId *id);
-BLS_DLL_API mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id);
-
-// hash buf and set
-BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize);
-#ifndef MCL_DONT_USE_CSPRNG
-/*
-	set secretKey if system has /dev/urandom or CryptGenRandom
-	return 0 if success else -1
-*/
-BLS_DLL_API int blsSecretKeySetByCSPRNG(blsSecretKey *sec);
-/*
-	set user-defined random function for setByCSPRNG
-	@param self [in] user-defined pointer
-	@param readFunc [in] user-defined function,
-	which writes random bufSize bytes to buf and returns bufSize if success else returns 0
-	@note if self == 0 and readFunc == 0 then set default random function
-	@note not threadsafe
-*/
-BLS_DLL_API void blsSetRandFunc(void *self, unsigned int (*readFunc)(void *self, void *buf, unsigned int bufSize));
-#endif
-
-BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
-
-BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
-//////////////////////////////////////////////////////////////////////////
-// the following apis will be removed
-
-// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
-BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize);
-/*
-	return written byte size if success else 0
-*/
-BLS_DLL_API mclSize blsIdGetLittleEndian(void *buf, mclSize maxBufSize, const blsId *id);
-
-// return 0 if success
-BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
-BLS_DLL_API int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
-/*
-	return written byte size if success else 0
-*/
-BLS_DLL_API mclSize blsSecretKeyGetLittleEndian(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
-/*
-	return strlen(buf) if success else 0
-	buf is '\0' terminated
-*/
-BLS_DLL_API mclSize blsSecretKeyGetDecStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API mclSize blsSecretKeyGetHexStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize);
-BLS_DLL_API mclSize blsPublicKeyGetHexStr(char *buf, mclSize maxBufSize, const blsPublicKey *pub);
-BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, mclSize bufSize);
-BLS_DLL_API mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const blsSignature *sig);
-
-/*
-	Diffie Hellman key exchange
-	out = sec * pub
-*/
-BLS_DLL_API void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub);
-
-#endif // BLS_MINIMUM_API
-
-#ifdef __cplusplus
-}
-#endif
+void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
+int blsInit(int curve, int compiledTimeVar);
+void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
+void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
+int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
+void mclBnFr_add(mclBnFr *z, const mclBnFr *x, const mclBnFr *y);
+void mclBnFr_clear(mclBnFr *x);
+mclSize mclBnFr_deserialize(mclBnFr *x, const void *buf, mclSize bufSize);
+void mclBnFr_div(mclBnFr *z, const mclBnFr *x, const mclBnFr *y);
+mclSize mclBnFr_getStr(char *buf, mclSize maxBufSize, const mclBnFr *x, int ioMode);
+int mclBnFr_setStr(mclBnFr *x, const char *buf, mclSize bufSize, int ioMode);
+void mclBnFr_inv(mclBnFr *y, const mclBnFr *x);
+int mclBnFr_isEqual(const mclBnFr *x, const mclBnFr *y);
+int mclBnFr_setLittleEndian(mclBnFr *x, const void *buf, mclSize bufSize);
+int mclBnFr_isOne(const mclBnFr *x);
+int mclBnFr_isZero(const mclBnFr *x);
+void mclBnFr_mul(mclBnFr *z, const mclBnFr *x, const mclBnFr *y);
+void mclBnFr_neg(mclBnFr *y, const mclBnFr *x);
+mclSize mclBnFr_serialize(void *buf, mclSize maxBufSize, const mclBnFr *x);
+int mclBnFr_setByCSPRNG(mclBnFr *x);
+int mclBnFr_setHashOf(mclBnFr *x, const void *buf, mclSize bufSize);
+void mclBnFr_setInt(mclBnFr *y, mclInt x);
+void mclBnFr_setInt32(mclBnFr *y, int x);
+void mclBnFr_sub(mclBnFr *z, const mclBnFr *x, const mclBnFr *y);
+typedef struct {} mclBnG1;
+void mclBnG1_add(mclBnG1 *z, const mclBnG1 *x, const mclBnG1 *y);
+void mclBnG1_clear(mclBnG1 *x);
+void mclBnG1_dbl(mclBnG1 *y, const mclBnG1 *x);
+mclSize mclBnG1_deserialize(mclBnG1 *x, const void *buf, mclSize bufSize);
+mclSize mclBnG1_getStr(char *buf, mclSize maxBufSize, const mclBnG1 *x, int ioMode);
+int mclBnG1_hashAndMapTo(mclBnG1 *x, const void *buf, mclSize bufSize);
+int mclBnG1_isEqual(const mclBnG1 *x, const mclBnG1 *y);
+int mclBnG1_isZero(const mclBnG1 *x);
+void mclBnG1_mul(mclBnG1 *z, const mclBnG1 *x, const mclBnFr *y);
+void mclBnG1_mulCT(mclBnG1 *z, const mclBnG1 *x, const mclBnFr *y);
+void mclBnG1_neg(mclBnG1 *y, const mclBnG1 *x);
+mclSize mclBnG1_serialize(void *buf, mclSize maxBufSize, const mclBnG1 *x);
+int mclBnG1_setStr(mclBnG1 *x, const char *buf, mclSize bufSize, int ioMode);
+void mclBnG1_sub(mclBnG1 *z, const mclBnG1 *x, const mclBnG1 *y);
+typedef struct {} mclBnG2;
+void mclBnG2_add(mclBnG2 *z, const mclBnG2 *x, const mclBnG2 *y);
+void mclBnG2_clear(mclBnG2 *x);
+void mclBnG2_dbl(mclBnG2 *y, const mclBnG2 *x);
+mclSize mclBnG2_deserialize(mclBnG2 *x, const void *buf, mclSize bufSize);
+mclSize mclBnG2_getStr(char *buf, mclSize maxBufSize, const mclBnG2 *x, int ioMode);
+int mclBnG2_hashAndMapTo(mclBnG2 *x, const void *buf, mclSize bufSize);
+int mclBnG2_isEqual(const mclBnG2 *x, const mclBnG2 *y);
+int mclBnG2_isZero(const mclBnG2 *x);
+void mclBnG2_mul(mclBnG2 *z, const mclBnG2 *x, const mclBnFr *y);
+void mclBnG2_neg(mclBnG2 *y, const mclBnG2 *x);
+mclSize mclBnG2_serialize(void *buf, mclSize maxBufSize, const mclBnG2 *x);
+int mclBnG2_setStr(mclBnG2 *x, const char *buf, mclSize bufSize, int ioMode);
+void mclBnG2_sub(mclBnG2 *z, const mclBnG2 *x, const mclBnG2 *y);
+typedef struct {} mclBnGT;
+void mclBnGT_add(mclBnGT *z, const mclBnGT *x, const mclBnGT *y);
+void mclBnGT_clear(mclBnGT *x);
+mclSize mclBnGT_deserialize(mclBnGT *x, const void *buf, mclSize bufSize);
+void mclBnGT_div(mclBnGT *z, const mclBnGT *x, const mclBnGT *y);
+mclSize mclBnGT_getStr(char *buf, mclSize maxBufSize, const mclBnGT *x, int ioMode);
+void mclBnGT_inv(mclBnGT *y, const mclBnGT *x);
+int mclBnGT_isEqual(const mclBnGT *x, const mclBnGT *y);
+int mclBnGT_isOne(const mclBnGT *x);
+int mclBnGT_isZero(const mclBnGT *x);
+void mclBnGT_mul(mclBnGT *z, const mclBnGT *x, const mclBnGT *y);
+void mclBnGT_neg(mclBnGT *y, const mclBnGT *x);
+void mclBnGT_pow(mclBnGT *z, const mclBnGT *x, const mclBnFr *y);
+mclSize mclBnGT_serialize(void *buf, mclSize maxBufSize, const mclBnGT *x);
+void mclBnGT_setInt(mclBnGT *y, mclInt x);
+int mclBnGT_setStr(mclBnGT *x, const char *buf, mclSize bufSize, int ioMode);
+void mclBnGT_sub(mclBnGT *z, const mclBnGT *x, const mclBnGT *y);
+int mclBn_FrEvaluatePolynomial(mclBnFr *out, const mclBnFr *cVec, mclSize cSize, const mclBnFr *x);
+int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *xVec, const mclBnFr *yVec, mclSize k);
+int mclBn_G1EvaluatePolynomial(mclBnG1 *out, const mclBnG1 *cVec, mclSize cSize, const mclBnFr *x);
+int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnFr *xVec, const mclBnG1 *yVec, mclSize k);
+int mclBn_G2EvaluatePolynomial(mclBnG2 *out, const mclBnG2 *cVec, mclSize cSize, const mclBnFr *x);
+int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnFr *xVec, const mclBnG2 *yVec, mclSize k);
+void mclBn_finalExp(mclBnGT *y, const mclBnGT *x);
+mclSize mclBn_getCurveOrder(char *buf, mclSize maxBufSize);
+mclSize mclBn_getFieldOrder(char *buf, mclSize maxBufSize);
+int mclBn_getOpUnitSize(void);
+int mclBn_getUint64NumToPrecompute(void);
+void mclBn_millerLoop(mclBnGT *z, const mclBnG1 *x, const mclBnG2 *y);
+void mclBn_pairing(mclBnGT *z, const mclBnG1 *x, const mclBnG2 *y);
+void mclBn_precomputeG2(uint64_t *Qbuf, const mclBnG2 *Q);
+void mclBn_precomputedMillerLoop(mclBnGT *f, const mclBnG1 *P, const uint64_t *Qbuf);
+void mclBn_precomputedMillerLoop2(mclBnGT *f, const mclBnG1 *P1, const uint64_t *Q1buf, const mclBnG1 *P2, const uint64_t *Q2buf);
+//void mclBn_precomputedMillerLoop2();
