@@ -36,6 +36,8 @@ cc_library(
         "@bazelify_gmp//:gmp",
         "@boringssl//:crypto",
     ],
+    linkstatic = True,
+    features = ["fully_static_link"],
 )
 
 go_test(
