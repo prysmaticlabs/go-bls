@@ -45,9 +45,8 @@ git_repository(
 git_repository(
     name = "io_bazel_rules_m4",
     remote = "https://github.com/jmillikin/rules_m4",
-    commit = "2bf69df77dfb6b3ba6b7fc95c304b0dc279375bc",
+    commit = "4779f77e37db9f0b3005734f0268f99b7204fe3e",
 )
-
 load("@io_bazel_rules_m4//:m4.bzl", "m4_register_toolchains")
 
 m4_register_toolchains()
