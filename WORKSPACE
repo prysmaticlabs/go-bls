@@ -38,7 +38,7 @@ git_repository(
 
 git_repository(
     name = "boringssl",
-    commit = "fafc4482e85c09e7af5f71b2eb287b73ccd1020a",
+    commit = "4a8c05ffe826c61d50fdf13483b35097168faa5c",
     remote = "https://github.com/google/boringssl",
 )
 
